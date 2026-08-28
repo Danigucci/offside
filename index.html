@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFFSIDE Quiz • Berlin</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --ink:#0b0b0d;
+  --panel:#161619;
+  --accent:#ff5a1f;
+  --accent-dim:rgba(255,90,31,.14);
+}
+
+body{ font-family:'Manrope', system-ui, sans-serif; background:var(--ink); color:#f4f3f0; }
+.font-display{ font-family:'Archivo Black', system-ui, sans-serif; }
+
+.text-accent{ color:var(--accent); }
+.bg-accent{ background:var(--accent); }
+.border-accent{ border-color:var(--accent); }
+
+.glow-soft{ text-shadow:0 0 30px rgba(255,90,31,.45); }
+
+.hero-panel{
+  background: linear-gradient(160deg, rgba(11,11,13,.1), rgba(11,11,13,.5)), url('images/IMG_4165.jpeg') center/cover no-repeat;
+  filter: brightness(1.25) saturate(1.1);
+}
+@media (min-width:768px){
+  .hero-panel{ clip-path: polygon(14% 0, 100% 0, 100% 100%, 0% 100%); }
+}
+
+.card-hover{ transition:transform .3s cubic-bezier(.4,0,.2,1), border-color .3s ease; }
+.card-hover:hover{ transform:translateY(-4px); border-color:var(--accent); }
+
+.btn-press:active{ transform:scale(.97); }
+
+#mobile-menu{
+  max-height:0; opacity:0; overflow:hidden;
+  transition:all .35s cubic-bezier(.4,0,.2,1); transform:translateY(-8px); pointer-events:none;
+}
+#mobile-menu.open{ max-height:520px; opacity:1; transform:translateY(0); pointer-events:auto; }
+
+#random-big-number{
+  font-size:150px; line-height:1;
+  transition:all .4s cubic-bezier(.4,0,.2,1);
+  text-shadow:0 0 30px rgba(255,90,31,.55);
+}
+.roll{ animation:rollAnimation .7s ease-in-out; }
+@keyframes rollAnimation{
+  0%{ transform:scale(.6) rotate(-10deg); }
+  50%{ transform:scale(1.1) rotate(6deg); }
+  100%{ transform:scale(1) rotate(0); }
+}
+
+#scroll-top{
+  position:fixed; bottom:20px; right:20px; z-index:900; width:52px; height:52px;
+  background:var(--accent); color:#0b0b0d; border-radius:9999px;
+  display:flex; align-items:center; justify-content:center; font-size:20px;
+  box-shadow:0 10px 24px -8px rgba(255,90,31,.5);
+  transition:all .3s ease; opacity:0; visibility:hidden; transform:translateY(16px);
+}
+#scroll-top.show{ opacity:1; visibility:visible; transform:translateY(0); }
+#scroll-top:hover{ transform:scale(1.08); }
+
+.rank-badge{
+  font-family:'Anton', system-ui, sans-serif;
+  width:2.5rem; height:2.5rem; border-radius:9999px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(255,90,31,.12); color:var(--accent); flex-shrink:0;
+}
+</style>
+</head>
+<body class="overflow-x-hidden">
+
+<!-- HEADER -->
+<header class="fixed top-0 w-full bg-black/90 backdrop-blur-md z-50 border-b border-white/10">
+<div class="max-w-7xl mx-auto px-6">
+<div class="flex items-center justify-between h-16 md:h-[72px]">
+<div onclick="scrollToTop()" class="flex items-center gap-3 cursor-pointer select-none flex-shrink-0">
+<img src="https://i.ibb.co/ynj9xKNj/grok-image-4d4a9889-ab3d-4e61-b57b-037f3c1aac4f.jpg"
+alt="OFFSIDE Quiz Berlin"
+class="h-10 md:h-12 w-auto rounded-lg">
+</div>
+<nav id="desktop-menu" class="hidden md:flex gap-8 text-sm font-semibold tracking-wide uppercase"></nav>
+<button id="kebab-btn"
+class="md:hidden flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/15 text-white font-medium px-4 py-2 rounded-full transition active:scale-95">
+<span class="text-sm">Меню</span>
+<i class="fa-solid fa-chevron-down text-xs transition-transform duration-300" id="chevron"></i>
+</button>
+</div>
+<div id="mobile-menu" class="md:hidden bg-[var(--panel)] border border-white/10 rounded-2xl mb-4 py-5 px-6 absolute left-6 right-6 shadow-2xl">
+<div id="mobile-menu-links" class="flex flex-col gap-4 text-base font-medium"></div>
+</div>
+</div>
+</header>
+
+<!-- HERO -->
+<section id="top" class="relative min-h-[100dvh] grid md:grid-cols-2 pt-16 md:pt-0">
+<div class="flex flex-col justify-center px-6 md:px-14 py-16 md:py-0 relative z-10">
+<h1 class="font-display text-6xl sm:text-7xl md:text-7xl text-white glow-soft tracking-tight leading-[0.95] mb-6">OFFSIDE<br>QUIZ</h1>
+<p class="text-lg md:text-xl text-zinc-400 max-w-sm mb-10 leading-relaxed">Самый атмосферный спортивный квиз Берлина. Команды, эфир, азарт — каждый месяц в новом раунде.</p>
+<a href="#games" class="inline-flex w-fit items-center gap-3 bg-accent hover:brightness-110 text-black font-bold text-lg px-9 py-4 rounded-full transition btn-press">
+<i class="fa-solid fa-futbol"></i>
+<span>ХОЧУ ИГРАТЬ</span>
+</a>
+</div>
+<div class="hero-panel h-72 md:h-auto relative"></div>
+</section>
+
+<!-- БЛИЖАЙШИЕ ИГРЫ -->
+<section id="games" class="py-20 sm:py-24 bg-[var(--ink)]">
+<div class="max-w-7xl mx-auto px-6">
+<h2 class="font-display text-3xl sm:text-4xl text-center mb-14 text-white">БЛИЖАЙШИЕ ИГРЫ</h2>
+<div id="games-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</div>
+</section>
+
+<!-- ФОРМАТЫ ИГР -->
+<section id="formats" class="py-20 sm:py-24 bg-[var(--panel)]">
+<div class="max-w-5xl mx-auto px-6">
+<h2 class="font-display text-3xl sm:text-4xl text-center mb-14 text-white">ФОРМАТ ИГРЫ</h2>
+<div id="formats-grid" class="grid grid-cols-1 gap-6"></div>
+</div>
+</section>
+
+<!-- ТАБЛИЦА ЛИГИ -->
+<section id="rating" class="py-20 sm:py-24 bg-[var(--ink)]">
+<div class="max-w-3xl mx-auto px-6">
+<h2 class="font-display text-3xl sm:text-4xl text-center mb-14 text-white">ТАБЛИЦА ЛИГИ</h2>
+<div class="bg-[var(--panel)] border border-white/10 rounded-2xl overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full min-w-[520px]">
+<thead>
+<tr class="border-b border-white/10">
+<th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-zinc-500 font-semibold">Место</th>
+<th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-zinc-500 font-semibold">Команда</th>
+<th class="py-4 px-4 text-center text-xs uppercase tracking-wider text-zinc-500 font-semibold">Игры</th>
+<th class="py-4 px-4 text-center text-xs uppercase tracking-wider text-zinc-500 font-semibold">Победы</th>
+<th class="py-4 px-5 text-right text-xs uppercase tracking-wider text-zinc-500 font-semibold">Очки</th>
+</tr>
+</thead>
+<tbody id="rating-table"></tbody>
+</table>
+</div>
+</div>
+<p class="text-center text-zinc-600 text-sm mt-6">Season 2025/26 · Обновление после каждой игры</p>
+</div>
+</section>
+
+<!-- РЕЗУЛЬТАТЫ ПРОШЕДШИХ ИГР -->
+<section id="past-results" class="py-20 sm:py-24 bg-[var(--panel)]">
+<div class="max-w-3xl mx-auto px-6">
+<h2 class="font-display text-3xl sm:text-4xl text-center mb-10 text-white">РЕЗУЛЬТАТЫ ПРОШЕДШИХ ИГР</h2>
+<div class="flex justify-center mb-10">
+<select id="quiz-select" onchange="showPastQuizResults()" class="bg-[var(--ink)] border border-white/15 text-white px-7 py-3.5 rounded-full text-base focus:border-accent outline-none cursor-pointer">
+<option value="">Выберите квиз...</option>
+<option value="quiz7">Квиз #7</option>
+<option value="quiz6">Квиз #6</option>
+<option value="quiz5">Квиз #5</option>
+<option value="quiz4">Квиз #4</option>
+<option value="quiz3">Квиз #3</option>
+<option value="quiz2">Квиз #2</option>
+<option value="quiz1">Квиз #1</option>
+</select>
+</div>
+<div id="past-results-container" class="bg-[var(--ink)] border border-white/10 rounded-2xl overflow-hidden min-h-[280px] flex items-center justify-center text-zinc-500"><p class="text-center px-6">Выберите квиз из списка выше, чтобы увидеть результаты</p></div>
+</div>
+</section>
+
+<!-- КОНТАКТЫ -->
+<section id="contacts" class="py-20 sm:py-24 bg-[var(--ink)]">
+<div class="max-w-4xl mx-auto px-6 text-center">
+<h2 class="font-display text-3xl sm:text-4xl mb-4 text-white">СВЯЖИСЬ С НАМИ</h2>
+<p class="text-lg text-zinc-400 mb-12">Пиши нам в Instagram или Telegram</p>
+<div class="grid sm:grid-cols-2 gap-5">
+<a href="https://www.instagram.com/offside_quiz" target="_blank" class="card-hover btn-press flex items-center justify-center gap-4 bg-[var(--panel)] border border-white/10 hover:border-accent text-white font-bold text-xl px-8 py-8 rounded-2xl transition">
+<i class="fa-brands fa-instagram text-4xl text-accent"></i>
+<span>@offside_quiz</span>
+</a>
+<a href="https://t.me/offside_quiz" target="_blank" class="card-hover btn-press flex items-center justify-center gap-4 bg-[var(--panel)] border border-white/10 hover:border-accent text-white font-bold text-xl px-8 py-8 rounded-2xl transition">
+<i class="fa-brands fa-telegram text-4xl text-accent"></i>
+<span>@offside_quiz</span>
+</a>
+</div>
+</div>
+</section>
+
+<!-- ГОЛОТРОН -->
+<section class="py-16 bg-[var(--panel)] border-t border-white/10">
+<div class="max-w-7xl mx-auto px-6 text-center">
+<button onclick="getRandomNumber()"
+class="btn-press inline-flex items-center gap-3 bg-accent hover:brightness-110 text-black font-bold text-xl px-10 py-5 rounded-full transition mx-auto">
+<i class="fa-solid fa-dice"></i>
+<span>ГОЛОТРОН</span>
+</button>
+</div>
+</section>
+
+<!-- Кнопка "Наверх" -->
+<button id="scroll-top" onclick="scrollToTop()">
+<i class="fa-solid fa-arrow-up"></i>
+</button>
+
+<!-- MODAL РЕГИСТРАЦИИ -->
+<div id="modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[999] p-4 overflow-y-auto">
+<div class="bg-[var(--panel)] border border-white/10 rounded-2xl w-full max-w-md mx-auto relative my-auto">
+<button onclick="closeModal()" class="absolute top-4 right-4 text-3xl text-zinc-500 hover:text-white leading-none z-10">×</button>
+<div class="p-6 sm:p-10 max-h-[90dvh] overflow-y-auto">
+<h3 id="modal-title" class="text-2xl font-bold mb-8 text-center text-white">Регистрация на игру</h3>
+<form id="registration-form" class="space-y-5">
+<input type="hidden" name="team" id="hidden-team" value="">
+<div class="flex items-start gap-3 bg-[var(--ink)] border border-white/10 rounded-2xl p-4">
+<input type="checkbox" id="no-team" class="w-5 h-5 mt-1 accent-[var(--accent)] cursor-pointer">
+<div>
+<label for="no-team" id="label-no-team" class="text-accent cursor-pointer select-none text-sm font-semibold">Мы без команды</label>
+<p id="no-team-hint" class="text-zinc-500 text-sm mt-1 leading-tight">Приходим компанией, но без названия команды (максимум 2 человека)</p>
+</div>
+</div>
+<div id="team-field">
+<label class="block text-sm mb-2 text-zinc-400" id="label-team">Название команды</label>
+<input type="text" name="team_display" id="input-team" minlength="2" maxlength="50" class="w-full bg-[var(--ink)] border border-white/15 rounded-xl px-5 py-3.5 text-base focus:border-accent outline-none">
+<p id="error-team" class="error-message text-red-400 text-sm mt-1.5 hidden"></p>
+</div>
+<div id="players-team-field">
+<label class="block text-sm mb-2 text-zinc-400" id="label-players-team">Количество человек (max. 10)</label>
+<input type="number" name="players" id="input-players" min="1" max="10" class="w-full bg-[var(--ink)] border border-white/15 rounded-xl px-5 py-3.5 text-base focus:border-accent outline-none" placeholder="Например: 4">
+<p id="error-players-team" class="error-message text-red-400 text-sm mt-1.5 hidden"></p>
+</div>
+<div id="players-solo-field" class="hidden">
+<label class="block text-sm mb-2 text-zinc-400" id="label-players-solo">Количество человек (max. 2)</label>
+<input type="number" name="players" id="input-players-solo" min="1" max="2" class="w-full bg-[var(--ink)] border border-white/15 rounded-xl px-5 py-3.5 text-base focus:border-accent outline-none" placeholder="Например: 2">
+<p id="error-players-solo" class="error-message text-red-400 text-sm mt-1.5 hidden"></p>
+</div>
+<div>
+<label class="block text-sm mb-2 text-zinc-400" id="label-contact">Telegram / Телефон</label>
+<input type="text" name="contact" id="input-contact" required minlength="5" class="w-full bg-[var(--ink)] border border-white/15 rounded-xl px-5 py-3.5 text-base focus:border-accent outline-none" placeholder="@username или +49 ...">
+<p id="error-contact" class="error-message text-red-400 text-sm mt-1.5 hidden"></p>
+</div>
+<div>
+<label class="block text-sm mb-2 text-zinc-400" id="label-email">Email</label>
+<input type="email" name="email" id="input-email" required class="w-full bg-[var(--ink)] border border-white/15 rounded-xl px-5 py-3.5 text-base focus:border-accent outline-none" placeholder="your@email.com">
+<p id="error-email" class="error-message text-red-400 text-sm mt-1.5 hidden"></p>
+</div>
+<button type="submit" id="modal-submit-btn" class="btn-press w-full bg-accent hover:brightness-110 text-black font-bold py-4 rounded-full text-lg transition">
+Завершить регистрацию
+</button>
+</form>
+</div>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer class="bg-black py-10 border-t border-white/10">
+<div class="max-w-7xl mx-auto px-6">
+<div class="flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-zinc-500">
+<div class="flex flex-wrap gap-x-8 gap-y-3 justify-center md:justify-start">
+<a href="results.html" class="text-black hover:text-accent transition">Results</a>
+</div>
+<div class="text-center md:text-right">© 2026 OFFSIDE Quiz Berlin · Alle Rechte vorbehalten</div>
+</div>
+</div>
+</footer>
+
+<script>
+// ==================== ДАННЫЕ ====================
+const translations = {
+ru: {
+nav: ["Хочу играть", "Форматы", "Рейтинг", "Результаты", "Контакты"],
+games: [
+    {
+        date: "09.09.26",
+        time: "19:00",
+        title: "Осенняя серия игр",
+        place: "Kin Za Dumplings and Oysters at Kudamm<br>📍 Dahlmannstraße 23, 10629 Berlin",
+        price: "12 €"
+    }
+],
+formats: [
+    { icon: "⚽", title: "Спортивная классика + итоги ЧМ", desc: "7 туров по всем видам спорта(70% футбол)", showDetails: true,
+fullDesc: `<strong>Формат «Спортивная классика»</strong><br><br>Игра состоит из <strong>7 туров</strong>:<br><br>• Тур 1 — Разминка<br>• Тур 2 — Правда или ложь<br>• Тур 3 — Музыкальный<br>• Тур 4 — ЧМ <br>• Тур 5 — Картинки <br>• Тур 6 — 3 факта<br>• Тур 7 — Блиц<br><br><span class="text-accent">Максимум 10 человек в команде</span>` }
+],
+rating: [
+    { place: 1, team: "Вне игры", games: 6, wins: 4, points: 351 },
+    { place: 2, team: "Легионеры", games: 7, wins: 0, points: 329.5 },
+    { place: 3, team: "Пивка для рывка", games: 6, wins: 2, points: 328 },
+    { place: 4, team: "Гладиаторы", games: 6, wins: 1, points: 325 },
+    { place: 5, team: "Легенды futbology", games: 6, wins: 0, points: 300.5 },
+    { place: 6, team: "Воротник Филимонова", games: 4, wins: 0, points: 204.5 },
+    { place: 7, team: "Фёникс Вильдау", games: 3, wins: 0, points: 140.5 },
+    { place: 8, team: "Ялла", games: 2, wins: 0, points: 114.5 },
+    { place: 9, team: "Сан Сиро", games: 2, wins: 0, points: 79 },
+    { place: 10, team: "Горе-цкааа", games: 1, wins: 0, points: 51.5 },
+    { place: 11, team: "Людочки", games: 1, wins: 0, points: 20.5 }
+],
+modalTitle: "Регистрация на квиз",
+labelTeam: "Название команды",
+labelPlayersTeam: "Количество человек (max. 10)",
+labelPlayersSolo: "Количество человек (max. 2)",
+labelContact: "Telegram / Телефон",
+labelEmail: "Email",
+labelNoTeam: "Я без команды",
+noTeamHint: "Приходим компанией, но без названия команды (максимум 2 человека)",
+submitBtn: "Завершить регистрацию",
+example4: "Например: 4",
+example2: "Например: 2",
+contactPlaceholder: "@username или +49 ...",
+validation: {
+teamShort: "Название команды слишком короткое (минимум 2 символа)",
+teamLong: "Название команды слишком длинное (максимум 50 символов)",
+playersRange: "Количество игроков должно быть от 1 до 10",
+playersSoloRange: "Без команды можно зарегистрировать от 1 до 2 человек",
+contactShort: "Введите корректный контакт (минимум 5 символов)",
+emailInvalid: "Введите корректный email"
+}
+}
+};
+
+const pastQuizzes = {
+quiz7: { title: "Квиз #7", results: [{ place: 1, team: "Вне игры", points: 68 }, { place: 2, team: "Легенды futbology", points: 61 }, { place: 3, team: "Воротник Филимонова", points: 60 }, { place: 4, team: "Гладиаторы", points: 49 }, { place: 5, team: "Легионеры", points: 29.5 }] },
+quiz6: { title: "Квиз #6", results: [{ place: 1, team: "Гладиаторы", points: 58.5 }, { place: 2, team: "Вне Игры", points: 56.5 }, { place: 3, team: "Горе-цкааа", points: 51.5 }, { place: 4, team: "Сан Сиро", points: 48.5 }, { place: 5, team: "Легионеры", points: 46 }, { place: 6, team: "Пивка для рывка", points: 44.5 }] },
+quiz5: { title: "Квиз #5", results: [{ place: 1, team: "Вне игры", points: 65.5 }, { place: 2, team: "Фёникс Вильдау", points: 61.5 }, { place: 3, team: "Воротник Филимонова", points: 59.5 }, { place: 4, team: "Пивка для рывка", points: 59 }, { place: 5, team: "Гладиаторы", points: 57.5 }, { place: 6, team: "Легионеры", points: 55 },{ place: 7, team: "Легенды Futbology", points: 50 },{ place: 8, team: "Сан Сиро", points: 30.5 },{ place: 9, team: "Людочки", points: 20.5 }] },
+quiz4: { title: "Квиз #4", results: [{ place: 1, team: "Вне игры", points: 55.5 }, { place: 2, team: "Легенды Futbology", points: 50.5 }, { place: 3, team: "Пивка для рывка", points: 50 }, { place: 4, team: "Гладиаторы", points: 42.5 }, { place: 5, team: "Легионеры", points: 42.5 }, { place: 6, team: "Воротник Филимонова", points: 38.5 }] },
+quiz3: { title: "Квиз #3", results: [{ place: 1, team: "Пивка для рывка", points: 56 }, { place: 2, team: "Вне игры", points: 54 }, { place: 3, team: "Легионеры", points: 49 }, { place: 4, team: "Воротник Филимонова", points: 46.5 }, { place: 5, team: "Легенды futbology", points: 35.5 }, { place: 6, team: "Ян Веннегор оф Хесселинк", points: 28.5 }] },
+quiz2: { title: "Квиз #2", results: [{ place: 1, team: "Вне игры", points: 51.5 }, { place: 2, team: "Ян Веннегор оф Хесселинк", points: 50.5 }, { place: 3, team: "Гладиаторы", points: 47.5 }, { place: 4, team: "Легионеры", points: 43.5 }, { place: 5, team: "Пивка для рывка", points: 40.5 }, { place: 6, team: "Легенды futbology", points: 34.5 }] },
+quiz1: { title: "Квиз #1", results: [{ place: 1, team: "Пивка для рывка", points: 78 }, { place: 2, team: "Ялла", points: 77 }, { place: 3, team: "Гладиаторы", points: 70 }, { place: 4, team: "Легенды futbology", points: 69 }, { place: 5, team: "Легионеры", points: 64 }] }
+};
+
+let countdownIntervals = [];
+let numberHistory = [];
+let availableNumbers = [];
+
+// ==================== ФУНКЦИИ ====================
+function scrollToTop() { window.scrollTo({ top: 0, behavior: "smooth" }); }
+
+function initGolotron() {
+    availableNumbers = Array.from({length: 50}, (_, i) => i + 1);
+}
+
+function getRandomNumber() {
+    if (availableNumbers.length === 0) initGolotron();
+
+    const index = Math.floor(Math.random() * availableNumbers.length);
+    const number = availableNumbers.splice(index, 1)[0];
+
+    numberHistory.unshift(number);
+    if (numberHistory.length > 8) numberHistory.pop();
+
+    let modal = document.getElementById('random-modal');
+    if (modal) {
+        const numberEl = modal.querySelector('#random-big-number');
+        const historyEl = modal.querySelector('#history');
+        if (numberEl) {
+            numberEl.classList.add('roll');
+            setTimeout(() => numberEl.classList.remove('roll'), 800);
+            numberEl.style.transform = 'scale(0.6)';
+            setTimeout(() => {
+                numberEl.textContent = number;
+                numberEl.style.transform = 'scale(1)';
+            }, 180);
+        }
+        if (historyEl) {
+            historyEl.innerHTML = numberHistory.map(n =>
+                `<span class="inline-block bg-white/5 text-accent px-3.5 py-1.5 rounded-full text-base font-bold border border-white/10">${n}</span>`
+            ).join('');
+        }
+        launchConfetti();
+        return;
+    }
+
+    const modalHTML = `
+    <div id="random-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center z-[2000] p-4">
+        <div class="bg-[var(--panel)] border border-white/10 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl">
+            <div class="bg-accent text-black py-4 text-center font-bold text-xl flex items-center justify-center gap-3">
+                <i class="fa-solid fa-futbol"></i> ГОЛОТРОН
+            </div>
+            <div class="p-10 text-center">
+                <div class="text-zinc-500 text-xs tracking-[3px] uppercase mb-2">Случайный номер игрока</div>
+                <div id="random-big-number" class="font-display text-[150px] sm:text-[180px] text-white leading-none">${number}</div>
+            </div>
+            <div class="px-8 pb-6">
+                <p class="text-xs text-zinc-600 mb-3 text-center uppercase tracking-wider">Последние номера</p>
+                <div id="history" class="flex flex-wrap gap-3 justify-center"></div>
+            </div>
+            <div class="p-6 flex gap-4 border-t border-white/10">
+                <button onclick="getRandomNumber()" class="flex-1 bg-accent hover:brightness-110 text-black font-bold py-4 rounded-full text-base active:scale-95 transition">Ещё раз</button>
+                <button onclick="document.getElementById('random-modal').remove()" class="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 font-bold py-4 rounded-full text-base active:scale-95 transition">Закрыть</button>
+            </div>
+        </div>
+    </div>`;
+    const div = document.createElement('div');
+    div.innerHTML = modalHTML;
+    document.body.appendChild(div.firstElementChild);
+    launchConfetti();
+}
+
+function startLiveCountdown(targetDateStr, container) {
+    if (!targetDateStr) return;
+    const countDownDate = new Date(targetDateStr).getTime();
+    if (isNaN(countDownDate)) return;
+    container.innerHTML = '';
+    const timerEl = document.createElement('div');
+    timerEl.className = 'flex items-center gap-2 text-accent text-sm font-semibold countdown';
+    timerEl.innerHTML = `<i class="fa-solid fa-clock"></i><span class="countdown-text"></span>`;
+    container.appendChild(timerEl);
+    const updateTimer = () => {
+        const distance = countDownDate - Date.now();
+        if (distance < 0) {
+            timerEl.innerHTML = `<span class="text-red-400 flex items-center gap-2"><i class="fa-solid fa-clock"></i> Игра уже началась</span>`;
+            return;
+        }
+        const days = Math.floor(distance / (1000*60*60*24));
+        const hours = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
+        const minutes = Math.floor((distance % (1000*60*60)) / (1000*60));
+        const seconds = Math.floor((distance % (1000*60)) / 1000);
+        let text = days > 0 ? `${days}d ${hours}h ${minutes}m ${seconds}s` : hours > 0 ? `${hours}h ${minutes}m ${seconds}s` : `${minutes}m ${seconds}s`;
+        timerEl.querySelector('.countdown-text').textContent = text;
+    };
+    updateTimer();
+    countdownIntervals.push(setInterval(updateTimer, 1000));
+}
+
+function renderNav() {
+    const t = translations.ru;
+    document.getElementById('desktop-menu').innerHTML = t.nav.map((text, i) =>
+        `<a href="#${['games','formats','rating','past-results','contacts'][i]}" class="text-zinc-300 hover:text-accent transition">${text}</a>`
+    ).join('');
+    let mobileHTML = '';
+    t.nav.forEach((text, i) => {
+        const id = ['games','formats','rating','past-results','contacts'][i];
+        mobileHTML += `<a href="#${id}" onclick="closeMobileMenu()" class="text-zinc-300 hover:text-accent transition block py-2">${text}</a>`;
+    });
+    document.getElementById('mobile-menu-links').innerHTML = mobileHTML;
+}
+
+function closeMobileMenu() {
+    document.getElementById('mobile-menu').classList.remove('open');
+}
+
+function renderGames() {
+    countdownIntervals.forEach(clearInterval);
+    countdownIntervals = [];
+    const t = translations.ru;
+    const container = document.getElementById('games-list');
+    container.innerHTML = '';
+    t.games.forEach(game => {
+        const buttonHTML = `<button onclick="openModal()" class="btn-press w-full bg-accent hover:brightness-110 text-black font-bold py-3.5 rounded-full text-base transition mt-auto">Рега на игру</button>`;
+        let placeHTML = game.place;
+        if (game.place.includes('Dahlmannstraße')) {
+            placeHTML = placeHTML.replace('Dahlmannstraße 23, 10629 Berlin',
+                `<a href="https://www.google.com/maps/search/?api=1&query=Dahlmannstraße+23,+10629+Berlin" target="_blank" class="text-accent hover:underline">Dahlmannstraße 23, 10629 Berlin</a>`);
+        }
+        const card = document.createElement('div');
+        card.className = "card-hover bg-[var(--panel)] border border-white/10 rounded-2xl p-6 flex flex-col h-full";
+        card.innerHTML = `
+            <div class="flex justify-between items-start mb-5">
+                <div>
+                    <div class="text-accent text-sm font-semibold">${game.date}</div>
+                    <div class="font-display text-3xl text-white">${game.time}</div>
+                </div>
+                <div class="bg-white/5 border border-white/10 text-white font-bold px-4 py-1.5 rounded-full text-sm whitespace-nowrap">${game.price}</div>
+            </div>
+            <h3 class="text-lg font-bold mb-2 leading-tight text-white">${game.title}</h3>
+            <p class="text-zinc-400 text-sm mb-6 flex-1">${placeHTML}</p>
+            <div class="countdown-container mb-5 min-h-[40px] flex items-center justify-center bg-black/30 rounded-xl py-2.5 border border-white/5"></div>
+            ${buttonHTML}
+        `;
+        container.appendChild(card);
+        startLiveCountdown("2026-09-09T19:00:00+02:00", card.querySelector('.countdown-container'));
+    });
+}
+
+function renderFormats() {
+    const t = translations.ru;
+    const container = document.getElementById('formats-grid');
+    container.innerHTML = '';
+    t.formats.forEach(format => {
+        const card = document.createElement('div');
+        card.className = `card-hover bg-[var(--ink)] border border-white/10 rounded-2xl p-8 sm:p-10 flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8 cursor-pointer group`;
+        card.innerHTML = `
+            <div class="text-6xl flex-shrink-0">${format.icon}</div>
+            <div class="text-center sm:text-left">
+                <h3 class="text-2xl font-bold mb-3 text-white">${format.title}</h3>
+                <p class="text-zinc-400 text-base mb-4">${format.desc}</p>
+                <span class="inline-flex items-center gap-2 text-sm text-accent font-semibold">Подробнее о турах <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i></span>
+            </div>
+        `;
+        card.addEventListener('click', showSportsClassicModal);
+        container.appendChild(card);
+    });
+}
+
+function showSportsClassicModal() {
+    const format = translations.ru.formats[0];
+    const modalHTML = `
+        <div class="fixed inset-0 bg-black/90 flex items-center justify-center z-[1000] p-4" id="format-modal">
+            <div class="bg-[var(--panel)] border border-white/10 rounded-2xl max-w-lg w-full overflow-hidden">
+                <div class="p-8 sm:p-10">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="text-5xl">${format.icon}</div>
+                        <button onclick="document.getElementById('format-modal').remove()" class="text-3xl text-zinc-500 hover:text-white">×</button>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-6 text-white">${format.title}</h3>
+                    <div class="text-zinc-300 leading-relaxed text-base">${format.fullDesc}</div>
+                </div>
+                <div class="border-t border-white/10 p-6 text-center">
+                    <button onclick="document.getElementById('format-modal').remove()" class="btn-press bg-accent hover:brightness-110 text-black font-bold px-10 py-3.5 rounded-full transition">Понятно</button>
+                </div>
+            </div>
+        </div>`;
+    const div = document.createElement('div');
+    div.innerHTML = modalHTML;
+    document.body.appendChild(div.firstElementChild);
+}
+
+function renderRatingTable() {
+    const tbody = document.getElementById('rating-table');
+    tbody.innerHTML = translations.ru.rating.map((r, i) => {
+        let trophy = '';
+        if (r.place === 1) trophy = `<i class="fa-solid fa-trophy text-amber-400"></i>`;
+        else if (r.place === 2) trophy = `<i class="fa-solid fa-trophy text-zinc-300"></i>`;
+        else if (r.place === 3) trophy = `<i class="fa-solid fa-trophy text-orange-700"></i>`;
+        const zebra = i % 2 === 1 ? 'bg-white/[0.02]' : '';
+        return `
+            <tr class="${zebra} hover:bg-accent/5 transition-colors">
+                <td class="py-4 px-5">
+                    <div class="flex items-center gap-3">
+                        <span class="rank-badge">${r.place}</span>
+                        ${trophy}
+                    </div>
+                </td>
+                <td class="py-4 px-5 font-semibold text-white">${r.team}</td>
+                <td class="py-4 px-4 text-center text-zinc-400">${r.games}</td>
+                <td class="py-4 px-4 text-center text-zinc-400">${r.wins}</td>
+                <td class="py-4 px-5 text-right">
+                    <span class="font-display text-xl text-accent">${r.points}</span>
+                </td>
+            </tr>`;
+    }).join('');
+}
+
+function showPastQuizResults() {
+    const select = document.getElementById('quiz-select');
+    const container = document.getElementById('past-results-container');
+    const value = select.value;
+    if (!value) {
+        container.innerHTML = `<p class="text-center px-6 text-zinc-500">Выберите квиз из списка выше, чтобы увидеть результаты</p>`;
+        return;
+    }
+    const quiz = pastQuizzes[value];
+    if (!quiz) return;
+    let html = `<div class="p-6 sm:p-8 w-full"><h3 class="text-xl font-bold text-white mb-6 text-center">${quiz.title}</h3><table class="w-full"><thead><tr class="border-b border-white/10"><th class="py-3 px-5 text-left text-xs uppercase tracking-wider text-zinc-500">Место</th><th class="py-3 px-5 text-left text-xs uppercase tracking-wider text-zinc-500">Команда</th><th class="py-3 px-5 text-right text-xs uppercase tracking-wider text-zinc-500">Очки</th></tr></thead><tbody>`;
+    quiz.results.forEach((r, i) => {
+        const zebra = i % 2 === 1 ? 'bg-white/[0.02]' : '';
+        html += `<tr class="${zebra} hover:bg-accent/5 transition-colors"><td class="py-4 px-5 font-bold text-accent">${r.place}</td><td class="py-4 px-5 font-medium text-white">${r.team}</td><td class="py-4 px-5 text-right font-display text-lg text-white">${r.points}</td></tr>`;
+    });
+    html += `</tbody></table></div>`;
+    container.innerHTML = html;
+}
+
+function openModal() {
+    const t = translations.ru;
+    document.getElementById('modal-title').textContent = t.modalTitle;
+    document.getElementById('label-team').textContent = t.labelTeam;
+    document.getElementById('label-players-team').textContent = t.labelPlayersTeam;
+    document.getElementById('label-players-solo').textContent = t.labelPlayersSolo;
+    document.getElementById('label-contact').textContent = t.labelContact;
+    document.getElementById('label-email').textContent = t.labelEmail;
+    document.getElementById('modal-submit-btn').textContent = t.submitBtn;
+    document.getElementById('label-no-team').textContent = t.labelNoTeam;
+    document.getElementById('no-team-hint').textContent = t.noTeamHint;
+    document.getElementById('input-players').placeholder = t.example4;
+    document.getElementById('input-players-solo').placeholder = t.example2;
+    document.getElementById('input-contact').placeholder = t.contactPlaceholder;
+
+    const form = document.getElementById('registration-form');
+    form.reset();
+    document.getElementById('hidden-team').value = '';
+    document.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
+    document.getElementById('no-team').checked = false;
+    toggleTeamField();
+    document.getElementById('modal').classList.remove('hidden');
+    document.getElementById('modal').classList.add('flex');
+}
+
+function closeModal() {
+    const modal = document.getElementById('modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+function toggleTeamField() {
+    const noTeam = document.getElementById('no-team').checked;
+    if (noTeam) {
+        document.getElementById('team-field').style.display = 'none';
+        document.getElementById('players-team-field').classList.add('hidden');
+        document.getElementById('players-solo-field').classList.remove('hidden');
+        document.getElementById('input-players').removeAttribute('required');
+        document.getElementById('input-players-solo').setAttribute('required', 'true');
+    } else {
+        document.getElementById('team-field').style.display = 'block';
+        document.getElementById('players-team-field').classList.remove('hidden');
+        document.getElementById('players-solo-field').classList.add('hidden');
+        document.getElementById('input-players').setAttribute('required', 'true');
+        document.getElementById('input-players-solo').removeAttribute('required');
+    }
+}
+
+function validateForm() {
+    const t = translations.ru.validation;
+    let isValid = true;
+    const noTeam = document.getElementById('no-team').checked;
+    if (!noTeam) {
+        const teamValue = document.getElementById('input-team').value.trim();
+        const err = document.getElementById('error-team');
+        if (teamValue.length < 2) { err.textContent = t.teamShort; err.classList.remove('hidden'); isValid = false; }
+        else if (teamValue.length > 50) { err.textContent = t.teamLong; err.classList.remove('hidden'); isValid = false; }
+        else err.classList.add('hidden');
+    }
+    const playersId = noTeam ? 'input-players-solo' : 'input-players';
+    const errPlayersId = noTeam ? 'error-players-solo' : 'error-players-team';
+    const max = noTeam ? 2 : 10;
+    const num = parseInt(document.getElementById(playersId).value);
+    const errP = document.getElementById(errPlayersId);
+    if (isNaN(num) || num < 1 || num > max) {
+        errP.textContent = noTeam ? t.playersSoloRange : t.playersRange;
+        errP.classList.remove('hidden');
+        isValid = false;
+    } else errP.classList.add('hidden');
+
+    const contact = document.getElementById('input-contact');
+    const errC = document.getElementById('error-contact');
+    if (contact.value.trim().length < 5) {
+        errC.textContent = t.contactShort;
+        errC.classList.remove('hidden');
+        isValid = false;
+    } else errC.classList.add('hidden');
+
+    const email = document.getElementById('input-email');
+    const errE = document.getElementById('error-email');
+    if (!email.value.trim() || !email.checkValidity()) {
+        errE.textContent = "Введите корректный email";
+        errE.classList.remove('hidden');
+        isValid = false;
+    } else errE.classList.add('hidden');
+    return isValid;
+}
+
+function launchConfetti() {
+    const colors = ['#ff5a1f', '#ffb27a', '#ffffff'];
+    confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 }, colors });
+    setTimeout(() => confetti({ particleCount: 150, angle: 60, spread: 60, origin: { x: 0.1, y: 0.7 }, colors }), 200);
+    setTimeout(() => confetti({ particleCount: 150, angle: 120, spread: 60, origin: { x: 0.9, y: 0.7 }, colors }), 400);
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', () => {
+    initGolotron();
+
+    const form = document.getElementById('registration-form');
+    document.getElementById('no-team').addEventListener('change', toggleTeamField);
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!validateForm()) return;
+        const noTeam = document.getElementById('no-team').checked;
+        document.getElementById('hidden-team').value = noTeam ? 'Без команды' : document.getElementById('input-team').value.trim();
+        const btn = document.getElementById('modal-submit-btn');
+        btn.textContent = 'Отправляем...';
+        btn.disabled = true;
+        try {
+            const payload = {
+                name: document.getElementById('hidden-team').value || document.getElementById('input-contact').value.trim(),
+                phone: document.getElementById('input-contact').value.trim(),
+                email: document.getElementById('input-email').value.trim(),
+                team: document.getElementById('hidden-team').value,
+                message: `Игроков: ${document.getElementById('input-players').value || document.getElementById('input-players-solo').value || ''}`
+            };
+            const res = await fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                btn.textContent = '✅ Зарегистрировано!';
+                btn.classList.add('!bg-green-500', '!text-white');
+                launchConfetti();
+                setTimeout(() => {
+                    closeModal();
+                    btn.disabled = false;
+                    btn.textContent = translations.ru.submitBtn;
+                    btn.classList.remove('!bg-green-500', '!text-white');
+                }, 2500);
+            } else throw new Error();
+        } catch {
+            alert('Ошибка отправки. Попробуйте ещё раз.');
+            btn.disabled = false;
+            btn.textContent = translations.ru.submitBtn;
+        }
+    });
+
+    document.getElementById('modal').addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeModal();
+    });
+
+    renderNav();
+    renderGames();
+    renderFormats();
+    renderRatingTable();
+
+    const kebabBtn = document.getElementById('kebab-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const chevron = document.getElementById('chevron');
+    kebabBtn.addEventListener('click', () => {
+        const isOpen = mobileMenu.classList.contains('open');
+        if (isOpen) {
+            mobileMenu.classList.remove('open');
+            chevron.style.transform = 'rotate(0deg)';
+        } else {
+            mobileMenu.classList.add('open');
+            chevron.style.transform = 'rotate(180deg)';
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!mobileMenu.contains(e.target) && !kebabBtn.contains(e.target)) {
+            mobileMenu.classList.remove('open');
+            chevron.style.transform = 'rotate(0deg)';
+        }
+    });
+
+    const scrollTopBtn = document.getElementById('scroll-top');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 400) scrollTopBtn.classList.add('show');
+        else scrollTopBtn.classList.remove('show');
+    });
+});
+</script>
+</body>
+</html>

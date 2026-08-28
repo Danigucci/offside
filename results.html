@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Offside Quiz Nr.6</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #0a0a0a;
+    color: #e0e0e0;
+    padding: 20px;
+    text-align: center;
+}
+h1 { color: #ff4d00; }
+table {
+    width: 100%; 
+    max-width: 1100px; 
+    margin: 20px auto;
+    border-collapse: collapse; 
+    background: #1a1a1a;
+}
+th, td { 
+    border: 1px solid #444; 
+    padding: 12px; 
+    text-align: center; 
+}
+th { 
+    background: #2a2a2a; 
+    color: #ff4d00; 
+}
+tr:nth-child(even) { background: #111; }
+td.editable { 
+    cursor: pointer; 
+}
+td.editable:hover { 
+    background: #333; 
+}
+td input {
+    width: 100%; 
+    background: #222; 
+    color: white;
+    border: 1px solid #ff4d00; 
+    text-align: center;
+    box-sizing: border-box;
+}
+.buttons {
+    margin: 15px 0;
+}
+button {
+    margin: 0 8px;
+    padding: 12px 25px;
+    font-size: 1.1em;
+    background: #ff4d00;
+    color: black;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+button:hover { background: #ff8800; }
+button#hideBtn {
+    background: #555;
+}
+button#hideBtn:hover { background: #777; }
+</style>
+</head>
+<body>
+<h1>OFFSIDE QUIZ Nr.6</h1>
+<p style="color:#ff4d00;"></p>
+<div class="buttons">
+    <button id="showNextBtn">Next</button>
+    <button id="hideBtn">Скрыть результаты</button>
+</div>
+<table id="table">
+<thead>
+<tr>
+    <th>Место</th>
+    <th>Команда</th>
+    <th>1 тур</th>
+    <th>2 тур</th>
+    <th>3 тур</th>
+    <th>После 3</th>
+    <th>4 тур</th>
+    <th>5 тур</th>
+    <th>6 тур</th>
+    <th>После 6</th>
+    <th>7 тур</th>
+    <th>Итого</th>
+</tr>
+</thead>
+<tbody>
+    <tr><td>1</td><td class="editable team"></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>2</td><td class="editable team"></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>3</td><td class="editable team"></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>4</td><td class="editable team"></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>5</td><td class="editable team"></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>6</td><td class="editable team"></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+</tbody>
+</table>
+
+<script>
+// Пересчёт и сортировка
+function updateTable() {
+    const rows = Array.from(document.querySelectorAll("#table tbody tr"));
+    rows.forEach(row => {
+        const c = row.cells;
+        const t1 = +c[2].innerText || 0;
+        const t2 = +c[3].innerText || 0;
+        const t3 = +c[4].innerText || 0;
+        const t4 = +c[6].innerText || 0;
+        const t5 = +c[7].innerText || 0;
+        const t6 = +c[8].innerText || 0;
+        const t7 = +c[10].innerText || 0;
+        
+        c[5].innerText = t1 + t2 + t3;
+        c[9].innerText = t1 + t2 + t3 + t4 + t5 + t6;
+        c[11].innerText = t1 + t2 + t3 + t4 + t5 + t6 + t7;
+    });
+    
+    // Сортировка по итогу
+    rows.sort((a, b) => (+b.cells[11].innerText) - (+a.cells[11].innerText));
+    
+    const tbody = document.querySelector("#table tbody");
+    tbody.innerHTML = '';
+    rows.forEach((row, i) => {
+        row.cells[0].innerText = i + 1;
+        tbody.appendChild(row);
+    });
+}
+
+let currentVisible = 0;
+
+// Показать следующую строку (снизу вверх)
+function showNextRow() {
+    updateTable();
+    const rows = document.querySelectorAll("#table tbody tr");
+    if (currentVisible >= rows.length) return;
+    
+    const indexToShow = rows.length - 1 - currentVisible;
+    const row = rows[indexToShow];
+    row.style.transition = "none";
+    row.style.opacity = "0";
+    row.style.transform = "translateY(50px)";
+    
+    setTimeout(() => {
+        row.style.transition = "all 0.8s ease";
+        row.style.opacity = "1";
+        row.style.transform = "translateY(0)";
+    }, 30);
+    
+    currentVisible++;
+}
+
+// Скрыть все
+function hideResults() {
+    const rows = document.querySelectorAll("#table tbody tr");
+    rows.forEach(row => {
+        row.style.transition = "all 0.5s ease";
+        row.style.opacity = "0";
+        row.style.transform = "translateY(40px)";
+    });
+    currentVisible = 0;
+}
+
+// Редактирование ячеек (тур + команда)
+document.querySelectorAll("#table td").forEach(cell => {
+    const col = cell.cellIndex;
+    
+    // Тур + колонка "Команда"
+    if ([1, 2, 3, 4, 6, 7, 8, 10].includes(col)) {
+        cell.classList.add("editable");
+        
+        cell.onclick = () => {
+            if (cell.querySelector("input")) return;
+            
+            const old = cell.innerText || "";
+            const input = document.createElement("input");
+            input.type = col === 1 ? "text" : "number";
+            input.value = old;
+            cell.innerHTML = "";
+            cell.appendChild(input);
+            input.focus();
+            input.select();
+            
+            const save = () => {
+                if (col === 1) {
+                    cell.innerText = input.value.trim() || "";
+                } else {
+                    cell.innerText = Math.max(0, +input.value || 0);
+                }
+                updateTable();
+            };
+            
+            input.onblur = save;
+            input.onkeydown = e => {
+                if (e.key === "Enter") save();
+                if (e.key === "Escape") {
+                    cell.innerText = old;
+                }
+            };
+        };
+    }
+});
+
+// Кнопки
+document.getElementById("showNextBtn").addEventListener("click", showNextRow);
+document.getElementById("hideBtn").addEventListener("click", hideResults);
+
+// Изначально всё скрыто
+window.onload = () => {
+    const rows = document.querySelectorAll("#table tbody tr");
+    rows.forEach(row => {
+        row.style.opacity = "0";
+        row.style.transform = "translateY(50px)";
+    });
+    updateTable();
+};
+</script>
+</body>
+</html>
