@@ -281,7 +281,7 @@ games: [
     }
 ],
 formats: [
-    { icon: "⚽", title: "Спортивная классика + итоги ЧМ", desc: "7 туров по всем видам спорта(70% футбол)", showDetails: true,
+    { icon: "⚽", title: "Спортивная классика", desc: "7 туров по всем видам спорта(70% футбол)", showDetails: true,
 fullDesc: `<strong>Формат «Спортивная классика»</strong><br><br>Игра состоит из <strong>7 туров</strong>:<br><br>• Тур 1 — Разминка<br>• Тур 2 — Правда или ложь<br>• Тур 3 — Музыкальный<br>• Тур 4 — ЧМ <br>• Тур 5 — Картинки <br>• Тур 6 — 3 факта<br>• Тур 7 — Блиц<br><br><span class="text-accent">Максимум 10 человек в команде</span>` }
 ],
 rating: [
@@ -486,7 +486,6 @@ function renderFormats() {
             <div class="text-center sm:text-left">
                 <h3 class="text-2xl font-bold mb-3 text-white">${format.title}</h3>
                 <p class="text-zinc-400 text-base mb-4">${format.desc}</p>
-                <span class="inline-flex items-center gap-2 text-sm text-accent font-semibold">Подробнее о турах <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i></span>
             </div>
         `;
         card.addEventListener('click', showSportsClassicModal);
