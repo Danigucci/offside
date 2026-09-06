@@ -276,7 +276,7 @@ games: [
         date: "09.09.26",
         time: "19:00",
         title: "Осенняя серия игр",
-        place: "Kin Za Dumplings and Oysters at Kudamm<br>📍 Dahlmannstraße 23, 10629 Berlin",
+        place: "Kvartrira 62<br>📍 Lübbener Str. 18, 10997 Berlin-Bezirk Friedrichshain-Kreuzberg",
         price: "12 €"
     }
 ],
@@ -450,9 +450,9 @@ function renderGames() {
     t.games.forEach(game => {
         const buttonHTML = `<button onclick="openModal()" class="btn-press w-full bg-accent hover:brightness-110 text-black font-bold py-3.5 rounded-full text-base transition mt-auto">Рега на игру</button>`;
         let placeHTML = game.place;
-        if (game.place.includes('Dahlmannstraße')) {
-            placeHTML = placeHTML.replace('Dahlmannstraße 23, 10629 Berlin',
-                `<a href="https://www.google.com/maps/search/?api=1&query=Dahlmannstraße+23,+10629+Berlin" target="_blank" class="text-accent hover:underline">Dahlmannstraße 23, 10629 Berlin</a>`);
+        if (game.place.includes('Lübbener Str.')) {
+            placeHTML = placeHTML.replace('Lübbener Str. 18, 10997 Berlin-Bezirk Friedrichshain-Kreuzberg',
+                `<a href="https://www.google.com/maps/search/?api=1&query=L%C3%BCbbener+Str.+18,+10997+Berlin" target="_blank" class="text-accent hover:underline">Lübbener Str. 18, 10997 Berlin-Bezirk Friedrichshain-Kreuzberg</a>`);
         }
         const card = document.createElement('div');
         card.className = "card-hover bg-[var(--panel)] border border-white/10 rounded-2xl p-6 flex flex-col h-full";
