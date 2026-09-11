@@ -32,7 +32,7 @@ export default async (req) => {
       <p>Привет!</p>
       <p>Вы зарегистрированы на игру <strong>«Осенняя серия игр»</strong>:</p>
       <p>
-        📅 <strong>09.09.26</strong>, начало в <strong>19:00</strong><br>
+        📅 <strong>07.10.26</strong>, начало в <strong>19:00</strong><br>
         📍 Kvartrira 62, Lübbener Str. 18, 10997 Berlin-Bezirk Friedrichshain-Kreuzberg<br>
         💶 Вход: <strong>12 €</strong> с человека<br>
         👥 Команда: <strong>${escapeHtml(team || "—")}</strong>
