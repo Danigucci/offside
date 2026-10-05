@@ -1,0 +1,7 @@
+{
+  "name": "offside-quiz-berlin",
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "^11.1.0"
+  }
+}

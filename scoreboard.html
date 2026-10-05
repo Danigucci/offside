@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Таблица • OFFSIDE Quiz Berlin</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+:root{ --ink:#0b0b0d; --panel:#161619; --accent:#ff5a1f; --line:rgba(255,255,255,.12); }
+*{ box-sizing:border-box; }
+body{ margin:0; min-height:100vh; display:flex; flex-direction:column; overflow-x:hidden; font-family:'Manrope', system-ui, sans-serif; background:var(--ink); color:#f4f3f0; }
+.display{ font-family:'Archivo Black', system-ui, sans-serif; }
+.hidden{ display:none !important; }
+.accent{ color:var(--accent); }
+
+#login{ margin:auto; width:100%; max-width:24rem; padding:0 1.25rem; display:flex; flex-direction:column; align-items:center; gap:1rem; text-align:center; }
+.field{ width:100%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.15); color:#fff; border-radius:9999px; padding:.8rem 1rem; text-align:center; outline:none; font:inherit; font-size:1rem; }
+.field:focus{ border-color:var(--accent); }
+.btn-main{ background:var(--accent); color:#0b0b0d; font:inherit; font-weight:800; border:0; border-radius:.9rem; padding:.75rem 2.2rem; font-size:1.25rem; cursor:pointer; }
+.btn-main:hover{ filter:brightness(1.1); }
+#login .btn-main{ width:100%; border-radius:9999px; font-size:1rem; padding:.8rem 2rem; }
+.btn-ghost{ background:rgba(255,255,255,.14); color:#fff; font:inherit; font-weight:700; border:0; border-radius:.9rem; padding:.75rem 1.6rem; font-size:1.1rem; cursor:pointer; }
+.btn-ghost:hover{ background:rgba(255,255,255,.22); }
+#login-error{ font-size:.875rem; color:var(--accent); margin:0; }
+
+#stage{ flex:1; display:flex; flex-direction:column; padding:1rem 3vw; min-height:0; }
+#stage .head{ text-align:center; }
+#stage h1{ margin:0; line-height:1; font-size:clamp(1.8rem,4.2vw,3.6rem); color:var(--accent); text-shadow:0 0 30px rgba(255,90,31,.45); }
+#subtitle{ margin:.25rem 0 0; color:rgba(255,255,255,.7); font-size:clamp(1rem,1.8vw,1.6rem); }
+.controls{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:.75rem; margin-top:.75rem; }
+#board-wrap{ margin-top:1rem; flex:1; min-height:0; overflow-x:auto; }
+#board{ background:var(--panel); border-radius:1rem; border:1px solid var(--line); overflow:hidden; font-size:var(--fs, 18px); }
+#empty{ text-align:center; color:rgba(255,255,255,.6); padding:4rem 0; font-size:1.2rem; }
+#footnote{ text-align:center; color:rgba(255,255,255,.45); margin:.5rem 0 0; font-size:.875rem; }
+
+.grow-row{ display:grid; align-items:center; height:var(--rowh, 44px); padding:0 .6em; column-gap:.4em; }
+.head-row{ height:auto; min-height:var(--rowh, 44px); padding-top:.5em; padding-bottom:.5em; color:var(--accent); font-weight:800; text-transform:uppercase; letter-spacing:.04em; line-height:1.15; border-bottom:1px solid rgba(255,255,255,.12); }
+.head-row > div{ font-size:.7em; }
+.body-row:nth-child(even){ background:rgba(255,255,255,.04); }
+.cell-c{ text-align:center; }
+.cell-team{ text-align:left; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-left:.4em; }
+.cell-total{ font-weight:800; color:var(--accent); }
+.cell-place{ font-weight:800; }
+[data-edit]{ cursor:text; border-radius:.3em; }
+[data-edit]:hover{ background:rgba(255,255,255,.1); }
+.cell-input{ width:100%; min-width:0; background:rgba(255,255,255,.95); color:#0b0b0d; font:inherit; font-weight:800; text-align:center; border:2px solid var(--accent); border-radius:.3em; padding:.1em .2em; outline:none; }
+.cell-team .cell-input{ text-align:left; }
+#toast{ position:fixed; left:50%; bottom:1.2rem; transform:translateX(-50%); background:var(--accent); color:#0b0b0d; font-weight:700; padding:.6rem 1.2rem; border-radius:9999px; opacity:0; pointer-events:none; transition:opacity .3s; z-index:50; }
+#toast.show{ opacity:1; }
+</style>
+</head>
+<body>
+
+<form id="login">
+  <div class="display" style="font-size:1.6rem">OFFSIDE <span class="accent">Quiz</span></div>
+  <p style="margin:0;font-size:.875rem;color:rgba(255,255,255,.5)">Таблица результатов</p>
+  <input id="pw" type="password" autocomplete="current-password" placeholder="Пароль" class="field">
+  <button class="btn-main">Войти</button>
+  <p id="login-error" class="hidden"></p>
+</form>
+
+<div id="stage" class="hidden">
+  <div class="head">
+    <h1 class="display">OFFSIDE QUIZ</h1>
+    <p id="subtitle"></p>
+    <div class="controls">
+      <button id="btn-next" class="btn-main">Next</button>
+      <button id="btn-hide" class="btn-ghost">Скрыть результаты</button>
+    </div>
+  </div>
+
+  <div id="board-wrap">
+    <div id="board"></div>
+    <p id="empty" class="hidden">Пока нет данных — добавь команды и баллы на странице ввода результатов.</p>
+  </div>
+
+  <p id="footnote"></p>
+</div>
+
+<div id="toast"></div>
+
+<script src="js/scoreboard-rank.js"></script>
+<script>
+const API = '/api/scoreboard/';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+let password = '';
+let state = { title: '', teams: [], scores: {}, rev: -1 };
+let rowEls = [];
+let revealed = 0;
+let cols = [];
+let pollTimer = null;
+
+async function call(route) {
+  const res = await fetch(API + route, { method: 'POST', headers: { 'x-admin-password': password, 'Content-Type': 'application/json' }, body: '{}' });
+  let data = {};
+  try { data = await res.json(); } catch (e) {}
+  return { ok: res.ok, status: res.status, data };
+}
+
+const COL_EM = { place: 3.4, team: 16.5, round: 3.2, sum3: 3.8, sum6: 3.8, total: 4.0 };
+
+function cellValue(c, row) {
+  if (c.kind === 'round') return row.per[c.r] === null ? '–' : row.per[c.r];
+  if (c.kind === 'sum3') return row.sum3;
+  if (c.kind === 'sum6') return row.sum6;
+  return row.total;
+}
+
+function render(keep = 0) {
+  const { rows, roundsWithData } = Scoreboard.computeRows(state);
+  const hasData = rows.length > 0 && roundsWithData.length > 0;
+  $('subtitle').textContent = state.title || '';
+  $('empty').classList.toggle('hidden', hasData);
+  $('board').classList.toggle('hidden', !hasData);
+  $('footnote').textContent = '';
+  rowEls = [];
+  revealed = 0;
+  if (!hasData) return;
+
+  cols = Scoreboard.columns(roundsWithData);
+  const template = `${COL_EM.place}em minmax(${COL_EM.team}em,1fr) ` + cols.map((c) => `var(--w-${c.kind === 'sum3' || c.kind === 'sum6' ? 'sum' : c.kind})`).join(' ');
+  const head = `<div class="grow-row head-row" style="grid-template-columns:${template}">
+      <div class="cell-c">Место</div><div class="cell-team" style="font-weight:800">Команда</div>
+      ${cols.map((c) => `<div class="cell-c">${esc(c.label)}</div>`).join('')}
+    </div>`;
+  const body = rows.map((row) => `<div class="grow-row body-row" data-id="${row.id}" style="grid-template-columns:${template}">
+      <div class="cell-c cell-place">${row.place}</div>
+      <div class="cell-team" data-edit="team" title="${esc(row.team)}">${esc(row.team)}</div>
+      ${cols.map((c) => c.kind === 'round'
+        ? `<div class="cell-c" data-edit="round" data-r="${c.r}">${cellValue(c, row)}</div>`
+        : `<div class="cell-c ${c.kind === 'total' ? 'cell-total' : ''}">${cellValue(c, row)}</div>`).join('')}
+    </div>`).join('');
+  $('board').innerHTML = head + body;
+
+  rowEls = [...$('board').querySelectorAll('.body-row')];
+  const keepN = Math.min(keep, rowEls.length);
+  rowEls.forEach((el, i) => {
+    const shown = i >= rowEls.length - keepN;
+    el.style.opacity = shown ? '1' : '0';
+    el.style.transform = shown ? 'translateY(0)' : 'translateY(50px)';
+    el.style.pointerEvents = shown ? '' : 'none';
+  });
+  revealed = keepN;
+
+  const last = roundsWithData[roundsWithData.length - 1];
+  $('footnote').textContent = last === Scoreboard.ROUNDS ? 'Итоговый рейтинг после 7-го тура' : `Рейтинг после ${last}-го тура`;
+  fit();
+}
+
+function fit() {
+  if (!rowEls.length) return;
+  const wrap = $('board-wrap');
+  const availH = Math.max(160, window.innerHeight - wrap.getBoundingClientRect().top - 44);
+  const rowH = Math.max(21, Math.min(76, availH / (rowEls.length + 1.5)));
+  const innerW = wrap.clientWidth - 4;
+  const baseEm = COL_EM.place + COL_EM.team + cols.reduce((sum, c) => sum + COL_EM[c.kind], 0) + 0.4 * (cols.length + 1) + 1.2 + 0.6;
+  const fs = Math.max(10, Math.min(rowH * 0.5, innerW / baseEm));
+  const spareEm = Math.max(0, innerW / fs - baseEm);
+  const extra = Math.min(spareEm / cols.length, 3.2);
+  const board = $('board');
+  board.style.setProperty('--rowh', rowH + 'px');
+  board.style.setProperty('--fs', fs + 'px');
+  board.style.setProperty('--w-round', (COL_EM.round + extra) + 'em');
+  board.style.setProperty('--w-sum', (COL_EM.sum3 + extra) + 'em');
+  board.style.setProperty('--w-total', (COL_EM.total + extra) + 'em');
+  board.style.minWidth = Math.ceil(fs * baseEm) + 'px';
+}
+
+function showNext() {
+  if (revealed >= rowEls.length) return;
+  const row = rowEls[rowEls.length - 1 - revealed];
+  row.style.transition = 'none';
+  row.style.opacity = '0';
+  row.style.transform = 'translateY(50px)';
+  setTimeout(() => {
+    row.style.transition = 'all 0.8s ease';
+    row.style.opacity = '1';
+    row.style.transform = 'translateY(0)';
+    row.style.pointerEvents = '';
+  }, 30);
+  revealed++;
+}
+
+function hideAll() {
+  rowEls.forEach((row) => {
+    row.style.transition = 'all 0.5s ease';
+    row.style.opacity = '0';
+    row.style.transform = 'translateY(40px)';
+    row.style.pointerEvents = 'none';
+  });
+  revealed = 0;
+}
+
+$('btn-next').addEventListener('click', showNext);
+$('btn-hide').addEventListener('click', hideAll);
+
+let toastTimer = null;
+function toast(msg) {
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+async function persist(keep) {
+  const body = { state: { title: state.title, teams: state.teams, scores: state.scores }, baseRev: state.rev };
+  const res = await fetch(API + 'save', { method: 'POST', headers: { 'x-admin-password': password, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  let data = {};
+  try { data = await res.json(); } catch (e) {}
+  if (res.ok) { state = data; render(keep); return; }
+  if (res.status === 409) { toast('Данные изменились с другого устройства — таблица обновлена, повтори правку'); state = data; render(); return; }
+  toast('Не удалось сохранить правку');
+  const fresh = await call('get');
+  if (fresh.ok) { state = fresh.data; render(keep); }
+}
+
+$('board').addEventListener('click', (e) => {
+  const cell = e.target.closest('[data-edit]');
+  if (!cell || cell.querySelector('input')) return;
+  const row = cell.closest('.body-row');
+  if (!row || row.style.opacity !== '1') return;
+  const id = row.dataset.id;
+  const isTeam = cell.dataset.edit === 'team';
+  const r = Number(cell.dataset.r);
+  const team = state.teams.find((t) => t.id === id);
+  if (!team) return;
+  const current = isTeam ? team.name : ((state.scores[r] || {})[id] ?? '');
+  const input = document.createElement('input');
+  input.className = 'cell-input';
+  input.type = isTeam ? 'text' : 'number';
+  if (isTeam) input.maxLength = 60; else input.step = '1';
+  input.value = current;
+  const original = cell.innerHTML;
+  cell.innerHTML = '';
+  cell.appendChild(input);
+  input.focus();
+  input.select();
+
+  let done = false;
+  const finish = async (commit) => {
+    if (done) return;
+    done = true;
+    const value = input.value.trim();
+    if (!commit) { cell.innerHTML = original; return; }
+    if (isTeam) {
+      if (!value || value === team.name) { cell.innerHTML = original; return; }
+      team.name = value;
+    } else {
+      const prev = (state.scores[r] || {})[id];
+      if (value === '' ? prev === undefined : Number(value) === prev) { cell.innerHTML = original; return; }
+      if (!state.scores[r]) state.scores[r] = {};
+      if (value === '') delete state.scores[r][id]; else state.scores[r][id] = Number(value);
+    }
+    await persist(revealed);
+  };
+  input.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') { ev.preventDefault(); finish(true); }
+    else if (ev.key === 'Escape') { ev.preventDefault(); finish(false); }
+  });
+  input.addEventListener('blur', () => finish(true));
+});
+
+document.addEventListener('keydown', (e) => {
+  if ($('stage').classList.contains('hidden') || e.target.tagName === 'INPUT') return;
+  if ([' ', 'Enter', 'ArrowRight', 'PageDown'].includes(e.key)) { e.preventDefault(); showNext(); }
+  else if (['h', 'H', 'Escape', 'р', 'Р'].includes(e.key)) hideAll();
+});
+window.addEventListener('resize', fit);
+
+function logout(msg) {
+  password = '';
+  clearInterval(pollTimer);
+  try { sessionStorage.removeItem('offside_admin_pw'); } catch (e) {}
+  $('stage').classList.add('hidden');
+  $('login').classList.remove('hidden');
+  $('login-error').textContent = msg || '';
+  $('login-error').classList.toggle('hidden', !msg);
+}
+
+async function poll() {
+  const r = await call('get');
+  if (r.status === 401) return logout('Пароль больше не подходит.');
+  if (r.ok && r.data.rev !== state.rev) {
+    if (document.activeElement && document.activeElement.classList.contains('cell-input')) return;
+    state = r.data;
+    render();
+  }
+}
+
+async function login(pw) {
+  password = pw;
+  const r = await call('get');
+  if (r.status === 401) return logout('Неверный пароль.');
+  if (r.status === 503) return logout('Пароль не настроен на сервере.');
+  if (!r.ok) return logout('Ошибка сервера, попробуй ещё раз.');
+  try { sessionStorage.setItem('offside_admin_pw', pw); } catch (e) {}
+  $('login').classList.add('hidden');
+  $('stage').classList.remove('hidden');
+  state = r.data;
+  render();
+  pollTimer = setInterval(poll, 5000);
+}
+
+$('login').addEventListener('submit', (e) => { e.preventDefault(); login($('pw').value); });
+try { const saved = sessionStorage.getItem('offside_admin_pw'); if (saved) login(saved); } catch (e) {}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ввод результатов • OFFSIDE Quiz Berlin</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+:root{ --ink:#0b0b0d; --panel:#161619; --accent:#ff5a1f; --line:rgba(255,255,255,.12); }
+*{ box-sizing:border-box; }
+body{ margin:0; min-height:100vh; display:flex; flex-direction:column; font-family:'Manrope', system-ui, sans-serif; background:var(--ink); color:#f4f3f0; }
+.display{ font-family:'Archivo Black', system-ui, sans-serif; }
+.hidden{ display:none !important; }
+.muted{ color:rgba(255,255,255,.5); }
+.accent{ color:var(--accent); }
+
+#login{ margin:auto; width:100%; max-width:24rem; padding:0 1.25rem; display:flex; flex-direction:column; align-items:center; gap:1rem; text-align:center; }
+#login .brand{ font-size:1.6rem; }
+
+.field{ width:100%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.15); color:#fff; border-radius:.75rem; padding:.7rem .9rem; outline:none; font:inherit; font-size:1rem; }
+.field:focus{ border-color:var(--accent); }
+.field::placeholder{ color:rgba(255,255,255,.3); }
+.field.round{ border-radius:9999px; text-align:center; padding:.8rem 1rem; }
+.score-field{ width:6rem; flex:none; text-align:center; font-weight:700; font-size:1.25rem; padding:.55rem .4rem; }
+
+.btn{ background:var(--accent); color:#0b0b0d; font:inherit; font-weight:800; border:0; border-radius:9999px; padding:.8rem 2rem; cursor:pointer; }
+.btn:hover{ filter:brightness(1.1); }
+.btn:disabled{ opacity:.6; cursor:default; }
+.btn.block{ width:100%; }
+.btn-outline{ background:transparent; color:#fff; border:1px solid rgba(255,255,255,.25); border-radius:9999px; padding:.5rem 1rem; font:inherit; font-weight:600; font-size:.875rem; cursor:pointer; }
+.btn-outline:hover{ border-color:rgba(255,255,255,.6); }
+.link{ background:none; border:0; color:rgba(255,255,255,.6); text-decoration:underline; font:inherit; font-size:.875rem; cursor:pointer; padding:.5rem; }
+.link:hover{ color:#fff; }
+.link.danger:hover{ color:var(--accent); }
+.error{ font-size:.875rem; color:var(--accent); margin:0; }
+
+main{ width:100%; max-width:42rem; margin:0 auto; padding:1.25rem 1rem 8rem; }
+.top{ display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
+h1{ margin:0; font-size:1.5rem; }
+h2{ margin:0; font-size:1.1rem; font-weight:800; }
+.card{ margin-top:1rem; background:var(--panel); border:1px solid var(--line); border-radius:1rem; padding:1rem; }
+label.lbl{ display:block; font-size:.875rem; font-weight:700; margin-bottom:.5rem; }
+.row{ display:flex; align-items:center; gap:.5rem; }
+.num{ width:1.5rem; text-align:right; font-size:.875rem; color:rgba(255,255,255,.4); flex:none; }
+.x{ background:none; border:0; color:rgba(255,255,255,.4); font-size:1.1rem; cursor:pointer; padding:.5rem; flex:none; }
+.x:hover{ color:var(--accent); }
+.stack > * + *{ margin-top:.5rem; }
+.pills{ display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.75rem; }
+.pill{ min-width:3rem; padding:.55rem .9rem; border-radius:9999px; font:inherit; font-weight:700; border:1px solid rgba(255,255,255,.2); color:rgba(255,255,255,.8); background:transparent; position:relative; cursor:pointer; }
+.pill.active{ background:var(--accent); color:#0b0b0d; border-color:transparent; }
+.pill .dot{ position:absolute; top:.3rem; right:.4rem; width:.4rem; height:.4rem; border-radius:9999px; background:var(--accent); }
+.pill.active .dot{ background:#0b0b0d; }
+.score-row{ display:flex; align-items:center; gap:.75rem; }
+.score-row .name{ flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:700; }
+#savebar{ position:fixed; left:0; right:0; bottom:0; background:rgba(11,11,13,.95); backdrop-filter:blur(6px); border-top:1px solid var(--line); padding:.75rem 1rem; }
+#savebar .in{ max-width:42rem; margin:0 auto; display:flex; align-items:center; gap:.75rem; }
+#save-status{ flex:1; min-width:0; font-size:.875rem; color:rgba(255,255,255,.6); }
+#save-status.ok{ color:var(--accent); }
+#save-status.error{ color:#ff8a8a; }
+.center{ text-align:center; margin-top:1.5rem; }
+a.nav{ color:var(--accent); font-size:.875rem; text-decoration:none; font-weight:700; }
+</style>
+</head>
+<body>
+
+<form id="login">
+  <div class="display brand">OFFSIDE <span class="accent">Quiz</span></div>
+  <p class="muted" style="margin:0;font-size:.875rem">Ввод результатов</p>
+  <input id="pw" type="password" autocomplete="current-password" placeholder="Пароль" class="field round">
+  <button class="btn block">Войти</button>
+  <p id="login-error" class="error hidden"></p>
+</form>
+
+<main id="app" class="hidden">
+  <div class="top">
+    <h1 class="display">Ввод результатов</h1>
+    <div style="display:flex;gap:1rem;align-items:center">
+      <a class="nav" href="scoreboard.html" target="_blank">Таблица на экран →</a>
+      <button id="btn-logout" class="link" style="padding:0">Выйти</button>
+    </div>
+  </div>
+
+  <section class="card">
+    <label class="lbl" for="title">Подзаголовок таблицы <span class="muted" style="font-weight:400">(необязательно)</span></label>
+    <input id="title" class="field" maxlength="80" placeholder="например: игра 07.10.26">
+  </section>
+
+  <section class="card">
+    <h2>Команды <span id="team-count" class="muted" style="font-weight:400"></span></h2>
+    <div id="team-list" class="stack" style="margin-top:.75rem"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem">
+      <button id="btn-add-team" class="btn-outline">+ Добавить команду</button>
+      <button id="btn-toggle-bulk" class="link">добавить списком</button>
+    </div>
+    <div id="bulk-box" class="hidden" style="margin-top:.75rem">
+      <textarea id="bulk-input" rows="5" class="field" placeholder="По одной команде на строку"></textarea>
+      <button id="btn-bulk-add" class="btn" style="margin-top:.5rem;padding:.5rem 1.25rem;font-size:.875rem">Добавить в список</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Баллы за тур</h2>
+    <div id="round-pills" class="pills"></div>
+    <div id="score-list" class="stack" style="margin-top:1rem"></div>
+    <p id="score-empty" class="muted hidden" style="font-size:.875rem;margin:.75rem 0 0">Сначала добавь команды выше.</p>
+  </section>
+
+  <section class="center">
+    <button id="btn-clear" class="link danger">Очистить всё (новая игра)</button>
+  </section>
+</main>
+
+<div id="savebar" class="hidden">
+  <div class="in">
+    <p id="save-status"></p>
+    <button id="btn-save" class="btn" style="white-space:nowrap">Сохранить</button>
+  </div>
+</div>
+
+<script src="js/scoreboard-rank.js"></script>
+<script>
+const API = '/api/scoreboard/';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const newId = () => Array.from(crypto.getRandomValues(new Uint8Array(5)), (b) => b.toString(16).padStart(2, '0')).join('');
+
+let password = '';
+let rev = 0;
+let state = { title: '', teams: [], scores: {} };
+let currentRound = 1;
+let dirty = false;
+
+async function call(route, body) {
+  const res = await fetch(API + route, {
+    method: 'POST',
+    headers: { 'x-admin-password': password, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body || {}),
+  });
+  let data = {};
+  try { data = await res.json(); } catch (e) {}
+  return { ok: res.ok, status: res.status, data };
+}
+
+function setStatus(text, tone) {
+  const el = $('save-status');
+  el.textContent = text;
+  el.className = tone || '';
+}
+
+function markDirty() {
+  dirty = true;
+  setStatus('Есть несохранённые изменения');
+}
+
+function adopt(data) {
+  rev = data.rev;
+  state = { title: data.title || '', teams: data.teams || [], scores: data.scores || {} };
+  dirty = false;
+}
+
+function renderPills() {
+  const withData = new Set(Scoreboard.computeRows(state).roundsWithData);
+  $('round-pills').innerHTML = Array.from({ length: Scoreboard.ROUNDS }, (_, i) => i + 1).map((r) =>
+    `<button type="button" class="pill ${r === currentRound ? 'active' : ''}" data-round="${r}">${r}${withData.has(r) ? '<span class="dot"></span>' : ''}</button>`
+  ).join('');
+}
+
+function renderTeams() {
+  $('team-count').textContent = state.teams.length ? `(${state.teams.length})` : '';
+  $('team-list').innerHTML = state.teams.length
+    ? state.teams.map((t, i) => `
+      <div class="row">
+        <span class="num">${i + 1}</span>
+        <input class="field team-name" data-id="${t.id}" maxlength="60" value="${esc(t.name)}" placeholder="Название команды">
+        <button type="button" class="x team-del" data-id="${t.id}" aria-label="Удалить команду">✕</button>
+      </div>`).join('')
+    : '<p class="muted" style="font-size:.875rem;margin:0">Пока нет команд — добавь первую.</p>';
+}
+
+function renderScores() {
+  const roundScores = state.scores[currentRound] || {};
+  $('score-empty').classList.toggle('hidden', state.teams.length > 0);
+  $('score-list').innerHTML = state.teams.map((t) => `
+    <div class="score-row">
+      <span class="name">${esc(t.name)}</span>
+      <input class="field score-field" type="number" step="1" enterkeyhint="next" data-id="${t.id}" value="${roundScores[t.id] ?? ''}" placeholder="—">
+    </div>`).join('');
+}
+
+function renderAll() {
+  $('title').value = state.title;
+  renderTeams();
+  renderPills();
+  renderScores();
+}
+
+$('round-pills').addEventListener('click', (e) => {
+  const btn = e.target.closest('.pill');
+  if (!btn) return;
+  currentRound = Number(btn.dataset.round);
+  renderPills();
+  renderScores();
+});
+
+$('title').addEventListener('input', (e) => { state.title = e.target.value; markDirty(); });
+
+$('team-list').addEventListener('input', (e) => {
+  if (!e.target.classList.contains('team-name')) return;
+  const team = state.teams.find((t) => t.id === e.target.dataset.id);
+  if (team) { team.name = e.target.value; markDirty(); renderScoresLabelsOnly(); }
+});
+
+function renderScoresLabelsOnly() {
+  const names = new Map(state.teams.map((t) => [t.id, t.name]));
+  document.querySelectorAll('#score-list .score-field').forEach((inp) => {
+    inp.previousElementSibling.textContent = names.get(inp.dataset.id) || '';
+  });
+}
+
+$('team-list').addEventListener('click', (e) => {
+  const del = e.target.closest('.team-del');
+  if (!del) return;
+  const team = state.teams.find((t) => t.id === del.dataset.id);
+  if (!team) return;
+  const hasScores = Object.values(state.scores).some((row) => row && row[team.id] !== undefined && row[team.id] !== '');
+  if (hasScores && !confirm(`Удалить «${team.name}» вместе с её баллами?`)) return;
+  state.teams = state.teams.filter((t) => t.id !== team.id);
+  for (const row of Object.values(state.scores)) if (row) delete row[team.id];
+  markDirty();
+  renderAll();
+});
+
+$('btn-add-team').addEventListener('click', () => {
+  state.teams.push({ id: newId(), name: '' });
+  markDirty();
+  renderTeams();
+  renderScores();
+  const inputs = document.querySelectorAll('.team-name');
+  inputs[inputs.length - 1].focus();
+});
+
+$('btn-toggle-bulk').addEventListener('click', () => $('bulk-box').classList.toggle('hidden'));
+
+$('btn-bulk-add').addEventListener('click', () => {
+  const names = $('bulk-input').value.split('\n').map((s) => s.trim()).filter(Boolean);
+  if (!names.length) return;
+  names.forEach((name) => state.teams.push({ id: newId(), name }));
+  $('bulk-input').value = '';
+  $('bulk-box').classList.add('hidden');
+  markDirty();
+  renderAll();
+});
+
+$('score-list').addEventListener('input', (e) => {
+  if (!e.target.classList.contains('score-field')) return;
+  if (!state.scores[currentRound]) state.scores[currentRound] = {};
+  state.scores[currentRound][e.target.dataset.id] = e.target.value;
+  markDirty();
+});
+
+$('score-list').addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' || !e.target.classList.contains('score-field')) return;
+  e.preventDefault();
+  const all = [...document.querySelectorAll('#score-list .score-field')];
+  const next = all[all.indexOf(e.target) + 1];
+  if (next) next.focus(); else e.target.blur();
+});
+
+$('btn-save').addEventListener('click', async () => {
+  const btn = $('btn-save');
+  btn.disabled = true;
+  setStatus('Сохраняю…');
+  const r = await call('save', { state, baseRev: rev });
+  btn.disabled = false;
+  if (r.ok) {
+    adopt(r.data);
+    renderAll();
+    setStatus('Сохранено ✓ ' + new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), 'ok');
+  } else if (r.status === 409) {
+    setStatus('Данные изменились на другом устройстве. Обнови страницу, чтобы не затереть чужие правки.', 'error');
+  } else if (r.status === 401) {
+    logout('Пароль больше не подходит.');
+  } else {
+    setStatus('Не удалось сохранить, попробуй ещё раз.', 'error');
+  }
+});
+
+$('btn-clear').addEventListener('click', async () => {
+  if (!confirm('Удалить ВСЕ команды и баллы? Это нельзя отменить.')) return;
+  if (!confirm('Точно очистить? Таблица на экране тоже опустеет.')) return;
+  const r = await call('clear');
+  if (r.ok) { adopt(r.data); currentRound = 1; renderAll(); setStatus('Всё очищено', 'ok'); }
+  else setStatus('Не удалось очистить.', 'error');
+});
+
+window.addEventListener('beforeunload', (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+function logout(msg) {
+  password = '';
+  try { sessionStorage.removeItem('offside_admin_pw'); } catch (e) {}
+  $('app').classList.add('hidden');
+  $('savebar').classList.add('hidden');
+  $('login').classList.remove('hidden');
+  $('login-error').textContent = msg || '';
+  $('login-error').classList.toggle('hidden', !msg);
+}
+$('btn-logout').addEventListener('click', () => logout());
+
+async function login(pw) {
+  password = pw;
+  const r = await call('get');
+  if (r.status === 401) return logout('Неверный пароль.');
+  if (r.status === 503) return logout('Пароль не настроен на сервере.');
+  if (!r.ok) return logout('Ошибка сервера, попробуй ещё раз.');
+  try { sessionStorage.setItem('offside_admin_pw', pw); } catch (e) {}
+  adopt(r.data);
+  $('login').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  $('savebar').classList.remove('hidden');
+  setStatus('Загружено');
+  renderAll();
+}
+
+$('login').addEventListener('submit', (e) => { e.preventDefault(); login($('pw').value); });
+try { const saved = sessionStorage.getItem('offside_admin_pw'); if (saved) login(saved); } catch (e) {}
+</script>
+
+</body>
+</html>
