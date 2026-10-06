@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>OFFSIDE LIVE • OFFSIDE Quiz Berlin</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b0b0d">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+:root {
+  color-scheme: dark;
+  font-synthesis: none;
+  --navy: #161619;
+  --navy-deep: #0b0b0d;
+  --navy-ink: #0b0b0d;
+  --yellow: #ffc93e;
+  --pink: #ff5a1f;
+  --orange: #ff9a3d;
+  --teal: #5ab8ff;
+  --text: #f4f3f0;
+  --muted: #a3a1a8;
+  --line: rgba(255, 255, 255, 0.12);
+  --card: rgba(255, 255, 255, 0.06);
+  --card-hi: rgba(255, 255, 255, 0.1);
+  --good: #3ddc97;
+  --bad: #ff5d6c;
+  --grad: linear-gradient(135deg, var(--pink) 0%, var(--orange) 100%);
+  --display: 'Archivo Black', 'Manrope', system-ui, sans-serif;
+  --body: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  background: var(--navy-deep);
+  background-image:
+    radial-gradient(60rem 40rem at 110% -10%, rgba(255, 90, 31, 0.18), transparent 60%),
+    linear-gradient(180deg, var(--navy) 0%, var(--navy-deep) 55%);
+  background-attachment: fixed;
+  color: var(--text);
+  font: 500 16px/1.5 var(--body);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+.wrap {
+  max-width: 520px; margin: 0 auto; box-sizing: border-box; min-height: 100dvh;
+  padding: max(12px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 20px;
+}
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { font: 800 16px/1.05 var(--body); }
+.brand span { display: block; color: var(--yellow); }
+.who { font: 700 13px/1.2 var(--body); color: var(--muted); text-align: right; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who b { color: var(--text); }
+h1, h2 { font-family: var(--display); font-weight: 800; line-height: 1.05; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+h1 { font-size: clamp(34px, 10vw, 48px); }
+h2 { font-size: clamp(26px, 7.5vw, 36px); }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.eyebrow { font: 800 12px/1 var(--body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--yellow); }
+.screen { display: grid; gap: 18px; animation: in .3s ease both; }
+@keyframes in { from { opacity: .001; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.center { display: grid; gap: 14px; justify-items: center; text-align: center; padding-block: 8vh 12px; }
+
+.btn {
+  appearance: none; border: 0; cursor: pointer; font: 800 17px/1 var(--body); color: var(--navy-ink);
+  background: var(--grad); border-radius: 999px; padding: 18px 28px; width: 100%;
+  box-shadow: 0 10px 30px -10px rgba(255, 90, 31, 0.7);
+}
+.btn:disabled { opacity: .6; }
+:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
+.field { display: grid; gap: 6px; }
+.field label { font: 700 13px/1 var(--body); color: var(--muted); }
+.field input {
+  font: 600 17px/1.2 var(--body); color: var(--text); background: rgba(0, 0, 0, 0.22);
+  border: 1.5px solid var(--line); border-radius: 14px; padding: 15px 16px; width: 100%; box-sizing: border-box;
+}
+.field input:focus { outline: none; border-color: var(--pink); }
+.field.err input { border-color: var(--bad); }
+.err-msg { color: var(--bad); font: 600 13px/1.3 var(--body); }
+.err-msg:empty { display: none; }
+.stack { display: grid; gap: 12px; }
+
+.pulse { width: 88px; height: 88px; border-radius: 28px; display: grid; place-items: center; background: var(--grad); box-shadow: 0 20px 50px -20px rgba(255, 90, 31, .8); animation: pulse 1.6s ease-in-out infinite; }
+.pulse svg { width: 44px; height: 44px; color: var(--navy-ink); }
+@keyframes pulse { 50% { transform: scale(1.06); } }
+
+/* Question */
+.hud { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.hud .eyebrow { color: var(--muted); }
+.secs { font: 800 22px/1 var(--body); font-variant-numeric: tabular-nums; }
+.secs.low { color: var(--bad); }
+.bar { height: 8px; border-radius: 99px; background: var(--card-hi); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 100%; background: var(--grad); transform-origin: left; }
+.bar.low i { background: var(--bad); }
+.prompt { font: 800 22px/1.2 var(--display); text-align: center; }
+.look { text-align: center; color: var(--muted); font-size: 14px; }
+.answers { display: grid; gap: 10px; }
+.ans {
+  appearance: none; cursor: pointer; text-align: left; width: 100%; min-height: 68px;
+  display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 12px;
+  padding: 12px 16px; border-radius: 18px; background: var(--card); border: 2px solid var(--line);
+  color: var(--text); font: 700 17px/1.25 var(--body); transition: transform .1s, opacity .15s, background .15s;
+}
+.ans:active:not(:disabled) { transform: scale(0.98); }
+.ans .k { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font: 800 17px/1 var(--body); color: var(--navy-ink); }
+.ans:nth-child(1) .k { background: var(--pink); }
+.ans:nth-child(2) .k { background: var(--text); }
+.ans:nth-child(3) .k { background: var(--yellow); }
+.ans:nth-child(4) .k { background: var(--teal); }
+.ans:disabled { cursor: default; }
+.ans.dim { opacity: .35; }
+.ans.picked { background: var(--card-hi); border-color: var(--text); opacity: 1; }
+.ans.ok { background: rgba(61, 220, 151, 0.16); border-color: var(--good); opacity: 1; }
+.ans.no { background: rgba(255, 93, 108, 0.16); border-color: var(--bad); opacity: 1; }
+.status-line { text-align: center; font: 700 15px/1.3 var(--body); color: var(--muted); min-height: 1.3em; }
+
+/* Reveal / final */
+.verdict { font: 800 clamp(44px, 14vw, 64px)/1 var(--display); }
+.verdict.ok { color: var(--good); }
+.verdict.no { color: var(--bad); }
+.answer-card { display: grid; gap: 4px; padding: 14px 16px; border-radius: 18px; background: rgba(255, 201, 62, 0.08); border: 1px solid rgba(255, 201, 62, 0.35); text-align: left; width: 100%; box-sizing: border-box; }
+.answer-card b { font: 800 12px/1 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--yellow); }
+.answer-card p { font-weight: 800; font-size: 18px; }
+.answer-card small { color: var(--muted); font-size: 14px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+.stat { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px 8px; text-align: center; }
+.stat b { display: block; font: 800 26px/1.1 var(--display); font-variant-numeric: tabular-nums; }
+.stat small { color: var(--muted); font-size: 12px; font-weight: 700; }
+.prizes { display: grid; gap: 8px; width: 100%; text-align: left; }
+.prize { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); font: 700 15px/1.3 var(--body); }
+.prize .pl { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: var(--navy-ink); font: 800 15px/1 var(--body); }
+.prize:nth-of-type(1) .pl { background: var(--yellow); }
+.prize:nth-of-type(2) .pl { background: #d5d5da; }
+.prize:nth-of-type(3) .pl { background: var(--orange); }
+.my-prize { width: 100%; box-sizing: border-box; padding: 14px 16px; border-radius: 18px; background: rgba(255, 201, 62, 0.1); border: 1px solid rgba(255, 201, 62, 0.45); display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; text-align: left; }
+.my-prize > div { display: grid; gap: 4px; }
+.my-prize img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: #fff; }
+.prize { grid-template-columns: 34px 34px 1fr; }
+.prize img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: #fff; }
+.my-prize b { font: 800 12px/1 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--yellow); }
+.my-prize p { font-weight: 800; font-size: 18px; }
+.my-prize small { color: var(--muted); }
+.bigplace { font: 800 min(34vw, 150px)/0.9 var(--display); }
+.offline { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); background: var(--bad); color: #fff; font: 700 13px/1 var(--body); padding: 10px 14px; border-radius: 999px; }
+.offline[hidden] { display: none; }
+.link { color: var(--muted); font-size: 13px; text-align: center; }
+.link button { background: none; border: 0; color: inherit; text-decoration: underline; font: inherit; cursor: pointer; padding: 4px; }
+@media (prefers-reduced-motion: reduce) { .screen, .pulse { animation: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">OFFSIDE<span>Quiz Berlin</span></div>
+    <div class="who" id="who"></div>
+  </header>
+  <main id="app" aria-live="polite"></main>
+</div>
+<p class="offline" id="offline" hidden>Нет связи — пробую снова…</p>
+
+<script src="js/confetti.min.js"></script>
+<script>
+(() => {
+  const API = '/api/live/';
+  const QUESTION_MS = 10000;
+  const POLL_MS = 800;
+  const KEYS = ['A', 'B', 'C', 'D'];
+  const app = document.getElementById('app');
+  const whoEl = document.getElementById('who');
+  const offlineEl = document.getElementById('offline');
+
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  };
+  const newId = () => (crypto.randomUUID ? crypto.randomUUID() : 'p-' + Date.now().toString(36) + Math.random().toString(36).slice(2));
+  let pid = store.get('offside_live_pid', null);
+  if (!pid) { pid = newId(); store.set('offside_live_pid', pid); }
+  let me = store.get('offside_live_me', { name: '', team: '', session: null });
+
+  const h = (tag, attrs = {}, ...kids) => {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === 'class') el.className = v;
+      else if (k === 'html') el.innerHTML = v;
+      else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+      else if (v !== false && v != null) el.setAttribute(k, v);
+    }
+    for (const kid of kids.flat()) if (kid != null && kid !== false) el.append(kid.nodeType ? kid : document.createTextNode(kid));
+    return el;
+  };
+  const show = (...nodes) => { app.replaceChildren(h('section', { class: 'screen' }, ...nodes)); window.scrollTo({ top: 0 }); };
+  const fmtSec = ms => (ms / 1000).toFixed(1).replace('.', ',') + ' с';
+  const fmtTime = ms => { const t = Math.round(ms / 100); const m = Math.floor(t / 600); const s = Math.floor(t / 10) % 60; return `${m}:${String(s).padStart(2, '0')},${t % 10}`; };
+  const plural = (n, one, few, many) => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? one : a >= 2 && a <= 4 && (b < 12 || b > 14) ? few : many; };
+  const ICON_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>';
+
+  const post = async (path, body) => {
+    const res = await fetch(API + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    let data = {}; try { data = await res.json(); } catch (e) {}
+    return { ok: res.ok, status: res.status, data };
+  };
+
+  const renderWho = () => {
+    whoEl.replaceChildren();
+    if (me.session && me.name) whoEl.append(h('b', {}, me.name), ` · ${me.team}`);
+  };
+
+  // ---------- screen state ----------
+  let shown = '';          // which screen is on, so polls don't redraw it
+  let S = null;            // last server state
+  let q = null;            // current question on this phone: { key, t0, picked, sent }
+  let tick = null;
+  const stopTick = () => { if (tick) { cancelAnimationFrame(tick); tick = null; } };
+
+  const prizeList = (prizes) => prizes && prizes.length ? h('div', { class: 'prizes' },
+    h('span', { class: 'eyebrow' }, prizes.length === 1 ? 'Приз победителю' : 'Играем за призы'),
+    prizes.map((p, i) => h('div', { class: 'prize' }, h('span', { class: 'pl' }, i + 1), p.logo ? h('img', { src: p.logo, alt: '' }) : h('span'), h('span', {}, p.text)))
+  ) : null;
+
+  function waitScreen(title, text, extra) {
+    show(h('div', { class: 'center' },
+      h('div', { class: 'pulse', html: ICON_EYE }),
+      h('h2', {}, title),
+      text ? h('p', { class: 'muted' }, text) : null,
+      extra || null
+    ));
+  }
+
+  function closedScreen() {
+    show(h('div', { class: 'center' },
+      h('span', { class: 'eyebrow' }, 'OFFSIDE LIVE'),
+      h('h2', {}, 'Игра сейчас закрыта'),
+      h('p', { class: 'muted' }, 'Она открывается во время квиза OFFSIDE Quiz Berlin. Если ты уже в баре — подожди, ведущий скоро её откроет, страница обновится сама.'),
+      h('a', { class: 'btn', href: '/#games', style: 'text-decoration:none;box-sizing:border-box;margin-top:8px' }, 'Записаться на квиз')
+    ));
+  }
+
+  function renderJoin(err) {
+    const name = h('input', { id: 'nm', maxlength: 24, placeholder: 'Например, Вася', autocomplete: 'nickname', value: me.name || '', 'aria-describedby': 'nm-err' });
+    const team = h('input', { id: 'tm', maxlength: 32, placeholder: 'Например, Вне игры', value: me.team || '', 'aria-describedby': 'tm-err' });
+    const nameErr = h('small', { class: 'err-msg', id: 'nm-err' });
+    const teamErr = h('small', { class: 'err-msg', id: 'tm-err' });
+    const formErr = h('p', { class: 'err-msg', role: 'alert' }, err || '');
+    const btn = h('button', { class: 'btn', type: 'submit' }, 'Я в игре');
+    const check = (input, el, msg) => { const bad = !input.value.trim(); input.parentElement.classList.toggle('err', bad); el.textContent = bad ? msg : ''; return !bad; };
+    const submit = async (e) => {
+      e.preventDefault();
+      const okN = check(name, nameErr, 'Впиши имя — его увидят на экране');
+      const okT = check(team, teamErr, 'Впиши свою команду');
+      if (!okN) return name.focus();
+      if (!okT) return team.focus();
+      btn.disabled = true; formErr.textContent = '';
+      try {
+        const r = await post('join', { pid, name: name.value.trim(), team: team.value.trim() });
+        if (!r.ok) {
+          btn.disabled = false;
+          if (r.data.error === 'banned_name' || r.data.error === 'banned_team') {
+            const [input, el] = r.data.error === 'banned_name' ? [name, nameErr] : [team, teamErr];
+            input.parentElement.classList.add('err');
+            el.textContent = r.data.error === 'banned_name' ? 'Такое имя нельзя использовать — придумай другое' : 'Такое название нельзя использовать — придумай другое';
+            input.focus();
+            return;
+          }
+          formErr.textContent = r.data.error === 'no_game' ? 'Игра ещё не открыта. Подожди, пока ведущий её запустит.' : 'Не получилось войти. Попробуй ещё раз.';
+          return;
+        }
+        me = { name: name.value.trim(), team: team.value.trim(), session: r.data.session };
+        store.set('offside_live_me', me);
+        renderWho();
+        shown = '';
+        poll(true);
+      } catch (e2) {
+        btn.disabled = false; formErr.textContent = 'Нет связи. Проверь интернет и попробуй ещё раз.';
+      }
+    };
+    show(
+      h('div', { class: 'stack', style: 'padding-top:4vh' },
+        h('span', { class: 'eyebrow' }, 'OFFSIDE LIVE'),
+        h('h1', {}, 'Играем вместе на большом экране'),
+        h('p', { class: 'muted' }, 'Вопросы и картинки — на экране в баре, ответы — здесь. 10 секунд на вопрос, 1 очко за верный ответ, при равенстве побеждает скорость.')
+      ),
+      prizeList(S && S.prizes),
+      h('form', { class: 'stack', novalidate: true, onsubmit: submit },
+        h('div', { class: 'field' }, h('label', { for: 'nm' }, 'Твоё имя'), name, nameErr),
+        h('div', { class: 'field' }, h('label', { for: 'tm' }, 'Команда'), team, teamErr),
+        btn, formErr
+      )
+    );
+  }
+
+  function renderQuestion(st) {
+    stopTick();
+    const Q = st.question;
+    if (!q || q.key !== Q.key) q = { key: Q.key, t0: performance.now(), picked: st.answered, sent: st.answered != null };
+    const secs = h('span', { class: 'secs' }, '10');
+    const fill = h('i');
+    const bar = h('div', { class: 'bar' }, fill);
+    const line = h('p', { class: 'status-line', role: 'status' });
+    const btns = Q.opts.map((opt, i) => h('button', { class: 'ans', type: 'button', onclick: () => pick(i) },
+      h('span', { class: 'k' }, KEYS[i]), h('span', {}, opt)));
+
+    const lock = () => btns.forEach((b, i) => {
+      b.disabled = true;
+      b.classList.toggle('picked', i === q.picked);
+      b.classList.toggle('dim', i !== q.picked);
+    });
+    const timeLeft = () => Math.max(0, QUESTION_MS - (performance.now() - q.t0));
+
+    async function pick(i) {
+      if (q.picked != null || timeLeft() <= 0) return;
+      const ms = Math.round(performance.now() - q.t0);
+      q.picked = i;
+      lock();
+      line.textContent = `Ответ принят · ${fmtSec(ms)}`;
+      const key = q.key;
+      try {
+        const r = await post('answer', { pid, key, opt: i, ms });
+        if (q.key !== key) return;
+        if (r.ok) q.sent = true;
+        else if (r.data.error === 'not_joined') { me.session = null; store.set('offside_live_me', me); shown = ''; poll(true); }
+        else line.textContent = 'Не успели принять ответ — вопрос уже закрыт';
+      } catch (e) {
+        line.textContent = 'Нет связи — ответ мог не дойти';
+      }
+    }
+
+    const loop = () => {
+      const left = timeLeft();
+      const s = Math.ceil(left / 1000);
+      secs.textContent = s;
+      const low = left <= 3000;
+      secs.classList.toggle('low', low); bar.classList.toggle('low', low);
+      fill.style.transform = `scaleX(${left / QUESTION_MS})`;
+      if (left <= 0) {
+        if (q.picked == null) { btns.forEach(b => { b.disabled = true; b.classList.add('dim'); }); line.textContent = 'Время вышло'; }
+        tick = null; return;
+      }
+      tick = requestAnimationFrame(loop);
+    };
+
+    show(
+      h('div', { class: 'hud' }, h('span', { class: 'eyebrow' }, `${st.round.title} · ${Q.num}/${Q.of}`), secs),
+      bar,
+      h('p', { class: 'prompt' }, Q.prompt),
+      h('p', { class: 'look' }, 'Смотри на экран'),
+      h('div', { class: 'answers' }, btns),
+      line
+    );
+    if (q.picked != null) { lock(); line.textContent = 'Ответ принят — ждём остальных'; }
+    loop();
+  }
+
+  function renderReveal(st) {
+    stopTick();
+    const R = st.reveal;
+    const m = st.me;
+    const picked = m ? m.picked : null;
+    const ok = picked === R.correct;
+    show(
+      h('div', { class: 'center', style: 'padding-top:4vh' },
+        h('span', { class: 'eyebrow' }, `${st.round.title} · ${st.question.num}/${st.question.of}`),
+        h('p', { class: 'verdict ' + (ok ? 'ok' : 'no') }, picked == null ? 'Без ответа' : ok ? 'Верно!' : 'Мимо'),
+        h('div', { class: 'answer-card' }, h('b', {}, 'Правильный ответ'), h('p', {}, R.a), R.info ? h('small', {}, R.info) : null),
+        m ? h('div', { class: 'stats' },
+          h('div', { class: 'stat' }, h('b', {}, m.place), h('small', {}, `место из ${st.players}`)),
+          h('div', { class: 'stat' }, h('b', {}, m.correct), h('small', {}, plural(m.correct, 'очко', 'очка', 'очков'))),
+          h('div', { class: 'stat' }, h('b', {}, m.ms != null ? fmtSec(m.ms).replace(' с', '') : '—'), h('small', {}, 'секунд'))
+        ) : h('p', { class: 'muted' }, 'Ты в игре с середины вопроса — очки начнут считаться со следующего.')
+      )
+    );
+  }
+
+  let celebrated = false;
+  function renderFinal(st) {
+    stopTick();
+    const m = st.me;
+    if (m && m.pending) {
+      waitScreen('Объявляем победителей…', 'Смотри на большой экран — сейчас узнаешь своё место!');
+      return;
+    }
+    const prize = m && st.prizes && st.prizes[m.place - 1];
+    show(h('div', { class: 'center' },
+      h('span', { class: 'eyebrow' }, 'Игра окончена'),
+      m ? [
+        h('p', { class: 'muted' }, 'Твоё место'),
+        h('div', { class: 'bigplace grad-text', style: 'background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent' }, m.place),
+        h('p', {}, `из ${st.players} · ${m.correct} из ${st.total} верных · ${fmtTime(m.time)}`),
+        prize ? h('div', { class: 'my-prize' },
+          prize.logo ? h('img', { src: prize.logo, alt: '' }) : null,
+          h('div', {}, h('b', {}, 'Твой приз'), h('p', {}, prize.text), h('small', {}, 'Подойди к ведущему, чтобы его забрать.'))) : null
+      ] : h('h2', {}, 'Спасибо за игру!'),
+      h('p', { class: 'muted' }, 'Полная таблица — на большом экране.')
+    ));
+    if (prize && !celebrated && typeof confetti === 'function') {
+      celebrated = true;
+      confetti({ particleCount: 140, spread: 90, startVelocity: 40, origin: { y: 0.4 }, colors: ['#ffc93e', '#ff5a1f', '#ff9a3d', '#ffffff'] });
+    }
+  }
+
+  function render(st) {
+    S = st;
+    const joined = st.session && me.session === st.session;
+    let key;
+    if (st.phase === 'off') key = 'off';
+    else if (!joined) key = 'join:' + st.session;
+    else if (st.phase === 'lobby') key = 'lobby';
+    else if (st.phase === 'intro') key = 'intro:' + st.round.index;
+    else if (st.phase === 'question') key = 'q:' + st.question.key;
+    else if (st.phase === 'reveal') key = 'r:' + st.question.key + ':' + (st.me ? st.me.place + '/' + st.players : '-');
+    else key = 'final:' + (st.me ? (st.me.pending ? 'wait' : st.me.place) : '-');
+    if (key === shown) return;
+    shown = key;
+    renderWho();
+    if (st.phase === 'off') { stopTick(); closedScreen(); }
+    else if (!joined) { stopTick(); renderJoin(); }
+    else if (st.phase === 'lobby') { stopTick(); waitScreen('Ты в игре!', 'Найди своё имя на экране. Как только ведущий нажмёт «Старт», здесь появится первый вопрос.', prizeList(st.prizes)); }
+    else if (st.phase === 'intro') { stopTick(); waitScreen(`Раунд ${st.round.index + 1}: ${st.round.title}`, st.round.rule); }
+    else if (st.phase === 'question') renderQuestion(st);
+    else if (st.phase === 'reveal') renderReveal(st);
+    else renderFinal(st);
+  }
+
+  // ---------- polling ----------
+  let pollTimer = null, fails = 0, inflight = false;
+  async function poll(now) {
+    clearTimeout(pollTimer);
+    if (inflight && !now) return schedule();
+    inflight = true;
+    try {
+      const res = await fetch(API + 'state?pid=' + encodeURIComponent(pid), { cache: 'no-store' });
+      if (!res.ok) throw new Error(res.status);
+      render(await res.json());
+      fails = 0; offlineEl.hidden = true;
+    } catch (e) {
+      fails += 1;
+      if (fails >= 3) offlineEl.hidden = false;
+      if (!S) waitScreen('Подключаюсь…', null);
+    } finally {
+      inflight = false;
+      schedule();
+    }
+  }
+  const schedule = () => { clearTimeout(pollTimer); pollTimer = setTimeout(poll, fails ? Math.min(POLL_MS * (fails + 1), 4000) : POLL_MS); };
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) poll(true); });
+
+  renderWho();
+  poll(true);
+})();
+</script>
+</body>
+</html>
