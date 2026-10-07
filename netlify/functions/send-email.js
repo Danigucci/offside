@@ -1,3 +1,9 @@
+const PLACE = "Kvartira 62, Lübbener Str. 18, 10997 Berlin-Bezirk Friedrichshain-Kreuzberg";
+const GAMES = {
+  "07.10.26": { time: "19:00", place: PLACE, price: "12 €", closeAt: "2026-10-07T18:00:00+02:00" },
+  "08.11.26": { time: "19:00", place: PLACE, price: "12 €" },
+};
+
 export default async (req) => {
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
@@ -5,7 +11,13 @@ export default async (req) => {
 
   try {
     const data = await req.json();
-    const { name, phone, email, team, message } = data;
+    const { name, phone, email, team, message, gameDate } = data;
+    const game = GAMES[gameDate] || GAMES["08.11.26"];
+    const date = GAMES[gameDate] ? gameDate : "08.11.26";
+
+    if (game.closeAt && Date.now() >= new Date(game.closeAt).getTime()) {
+      return new Response(JSON.stringify({ error: "Registration closed" }), { status: 410 });
+    }
 
     if (!email || !name) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
@@ -20,7 +32,7 @@ export default async (req) => {
     }
 
     const html = `
-      <h2>Новая заявка на регистрацию</h2>
+      <h2>Новая заявка на регистрацию (${date})</h2>
       <p><strong>Имя:</strong> ${escapeHtml(name)}</p>
       ${phone ? `<p><strong>Телефон:</strong> ${escapeHtml(phone)}</p>` : ""}
       <p><strong>Email:</strong> ${escapeHtml(email)}</p>
@@ -32,9 +44,9 @@ export default async (req) => {
       <p>Привет!</p>
       <p>Вы зарегистрированы на игру <strong>«Осенняя серия игр»</strong>:</p>
       <p>
-        📅 <strong>07.10.26</strong>, начало в <strong>19:00</strong><br>
-        📍 Kvartrira 62, Lübbener Str. 18, 10997 Berlin-Bezirk Friedrichshain-Kreuzberg<br>
-        💶 Вход: <strong>12 €</strong> с человека<br>
+        📅 <strong>${date}</strong>, начало в <strong>${game.time}</strong><br>
+        📍 ${game.place}<br>
+        💶 Вход: <strong>${game.price}</strong> с человека<br>
         👥 Команда: <strong>${escapeHtml(team || "—")}</strong>
       </p>
       <p>До встречи на игре!<br>OFFSIDE Quiz Berlin</p>
@@ -51,7 +63,7 @@ export default async (req) => {
           from: fromEmail,
           to: toEmail,
           reply_to: email,
-          subject: `Новая заявка: ${name}`,
+          subject: `Новая заявка (${date}): ${name}`,
           html,
         }),
       }),

@@ -275,8 +275,18 @@ games: [
     {
         date: "07.10.26",
         time: "19:00",
+        start: "2026-10-07T19:00:00+02:00",
+        closeAt: "2026-10-07T18:00:00+02:00",
         title: "Осенняя серия игр",
-        place: "Kvartrira 62<br>📍 Lübbener Str. 18, 10997 Berlin-Bezirk Friedrichshain-Kreuzberg",
+        place: "Kvartira 62<br>📍 Lübbener Str. 18, 10997 Berlin-Bezirk Friedrichshain-Kreuzberg",
+        price: "12 €"
+    },
+    {
+        date: "08.11.26",
+        time: "19:00",
+        start: "2026-11-08T19:00:00+01:00",
+        title: "Осенняя серия игр",
+        place: "Kvartira 62<br>📍 Lübbener Str. 18, 10997 Berlin-Bezirk Friedrichshain-Kreuzberg",
         price: "12 €"
     }
 ],
@@ -447,8 +457,8 @@ function renderGames() {
     const t = translations.ru;
     const container = document.getElementById('games-list');
     container.innerHTML = '';
-    t.games.forEach(game => {
-        const buttonHTML = `<button onclick="openModal()" class="btn-press w-full bg-accent hover:brightness-110 text-black font-bold py-3.5 rounded-full text-base transition mt-auto">Рега на игру</button>`;
+    t.games.filter(game => !game.closeAt || Date.now() < new Date(game.closeAt).getTime()).forEach(game => {
+        const buttonHTML = `<button onclick="openModal('${game.date}')" class="btn-press w-full bg-accent hover:brightness-110 text-black font-bold py-3.5 rounded-full text-base transition mt-auto">Рега на игру</button>`;
         let placeHTML = game.place;
         if (game.place.includes('Lübbener Str.')) {
             placeHTML = placeHTML.replace('Lübbener Str. 18, 10997 Berlin-Bezirk Friedrichshain-Kreuzberg',
@@ -470,7 +480,7 @@ function renderGames() {
             ${buttonHTML}
         `;
         container.appendChild(card);
-        startLiveCountdown("2026-10-07T19:00:00+02:00", card.querySelector('.countdown-container'));
+        startLiveCountdown(game.start, card.querySelector('.countdown-container'));
     });
 }
 
@@ -560,7 +570,10 @@ function showPastQuizResults() {
     container.innerHTML = html;
 }
 
-function openModal() {
+let currentGameDate = '';
+
+function openModal(gameDate) {
+    currentGameDate = gameDate || '';
     const t = translations.ru;
     document.getElementById('modal-title').textContent = t.modalTitle;
     document.getElementById('label-team').textContent = t.labelTeam;
@@ -658,6 +671,12 @@ function launchConfetti() {
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
     initGolotron();
+    setInterval(() => {
+        const now = Date.now();
+        const shown = document.querySelectorAll('#games-list > div').length;
+        const expected = translations.ru.games.filter(g => !g.closeAt || now < new Date(g.closeAt).getTime()).length;
+        if (shown !== expected) renderGames();
+    }, 15000);
 
     const form = document.getElementById('registration-form');
     document.getElementById('no-team').addEventListener('change', toggleTeamField);
@@ -675,7 +694,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 phone: document.getElementById('input-contact').value.trim(),
                 email: document.getElementById('input-email').value.trim(),
                 team: document.getElementById('hidden-team').value,
-                message: `Игроков: ${document.getElementById('input-players').value || document.getElementById('input-players-solo').value || ''}`
+                message: `Игроков: ${document.getElementById('input-players').value || document.getElementById('input-players-solo').value || ''}`,
+                gameDate: currentGameDate
             };
             const res = await fetch('/api/send-email', {
                 method: 'POST',
@@ -692,6 +712,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     btn.textContent = translations.ru.submitBtn;
                     btn.classList.remove('!bg-green-500', '!text-white');
                 }, 2500);
+            } else if (res.status === 410) {
+                alert('Регистрация на эту игру уже закрыта.');
+                closeModal();
+                renderGames();
+                btn.disabled = false;
+                btn.textContent = translations.ru.submitBtn;
             } else throw new Error();
         } catch {
             alert('Ошибка отправки. Попробуйте ещё раз.');
