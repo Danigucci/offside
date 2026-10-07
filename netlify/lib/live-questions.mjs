@@ -7,6 +7,7 @@
 // { text: '...', logo: 'live/prizes/name.png' } — `logo` is optional (square picture, shown in a circle).
 export const PRIZES = [
   { text: 'Билет на матч «Унион Берлин» — «Боруссия Дортмунд»' },
+  { text: 'Билет на матч «Унион Берлин» — «Эльферсберг»' },
 ];
 
 export const ROUNDS = [
