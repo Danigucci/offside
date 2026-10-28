@@ -1,7 +1,7 @@
 const PLACE = "Kvartira 62, Lübbener Str. 18, 10997 Berlin-Bezirk Friedrichshain-Kreuzberg";
 const GAMES = {
   "07.10.26": { title: "Осенняя серия игр", time: "19:00", place: PLACE, price: "12 €", closeAt: "2026-10-07T18:00:00+02:00" },
-  "08.11.26": { title: "День рождения квиза: нам ровно год!", time: "19:00", place: PLACE, price: "15 €" },
+  "18.11.26": { title: "День рождения квиза: нам ровно год!", time: "19:00", place: PLACE, price: "15 €" },
 };
 
 export default async (req) => {
@@ -12,8 +12,8 @@ export default async (req) => {
   try {
     const data = await req.json();
     const { name, phone, email, team, message, gameDate } = data;
-    const game = GAMES[gameDate] || GAMES["08.11.26"];
-    const date = GAMES[gameDate] ? gameDate : "08.11.26";
+    const game = GAMES[gameDate] || GAMES["18.11.26"];
+    const date = GAMES[gameDate] ? gameDate : "18.11.26";
 
     if (game.closeAt && Date.now() >= new Date(game.closeAt).getTime()) {
       return new Response(JSON.stringify({ error: "Registration closed" }), { status: 410 });
